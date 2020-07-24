@@ -1,0 +1,59 @@
+// test souce for class
+
+import system.io
+import system.graphics
+import system.file
+
+package graphics
+
+class GraphicDeviceContext {
+    GraphicDeviceContext(handle:int)
+    ~GraphicDeviceContext()
+    getHandle():int {
+        return self.handle
+    }
+
+    handle:int
+}
+
+
+interface Graphic {
+    Draw(context:GraphicDeviceContext)
+    Move(x:int, y:int)
+    Select(x:int, y:int)
+}
+
+class Rectangle {
+    Rectangle(x:int, y:int, height:int, width:int)
+    Draw(context:GraphicDeviceContext)
+    Move(x:int, y:int)
+    Select(x:int, y:int)
+    GetSize():int
+private:
+    x:int
+    y:int
+    height:int
+    width:int
+}
+
+class Triangle {
+    Draw(context:GraphicDeviceContext)
+    Move(x:int, y:int)
+    Select(x:int, y:int)
+}
+
+class Application {
+    static main(options:string[]){   
+        var graphics:Graphics
+        var context:GraphicDeviceContext
+        var rectangle:Rectangle
+        var triangle:Triangle
+
+        graphics.Add(rectange)
+        graphics.Add(triange)
+        for (g in graphics) {
+            g.draw(context)
+        }
+        graphics.iterate(g.draw)
+    }
+}

@@ -1,0 +1,79 @@
+/// test source file for stmt 
+class TestCase {
+   TestCase() {
+        self.author = "jenson.zuo@gmail.com"
+   }
+   
+   testIfStmt() {
+        index:int = 0
+        index += 10
+
+        if (index > 10)
+            index = 10
+        else
+            index += 10
+
+        if (index > 10) {
+            index = 10
+            index += 20
+        }
+        else {
+            index += 10
+        }
+
+   }
+   testWhileStmt() {
+       var index:int = 0
+       while (index < 10)
+           index += 1
+       while (index > 0) {
+           index -= 1
+           if (index == 5)
+                break
+        }
+    }
+   testForStmt() {
+       var index:int
+       sum:int = 0 
+       for (index = 0; index < 10; index += 1)
+           sum += index
+       for (i:int = 0; i < 10; i += 1) {
+           sum += i
+       }
+   }
+   testForEachStmt() {}
+   testDoStmt(){}
+   testNewStmt(){}
+   testReturnStmt(){}
+   testAssertStmt(){}
+   testBreakStmt(){}
+   testSwichStmt(){}
+   testTryStmt(){}
+   testCatchStmt(){}
+   testExprStmt(){}
+   testContinueStmt(){}
+private:
+   author:string
+}
+
+class Tester {
+    static main(argc:int, options:string[]):int {
+        var m:TestCase
+        m.testIfStmt()
+        m.testWhileStmt()
+        m.testForStmt()
+        m.testForEachStmt()
+        m.testDoStmt()
+        m.testNewStmt()
+        m.testBreakStmt()
+        m.testAssertStmt()
+        m.testReturnStmt()
+        m.testContinueStmt()
+        m.testTryStmt()
+        m.testCatchStmt()
+        m.testExprStmt()
+    }
+}
+
+
+
