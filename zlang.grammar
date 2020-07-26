@@ -1,0 +1,500 @@
+// zlang grammar definition
+compilationUnit
+    : declaration* EOF
+    ;
+
+declaration
+    : packageDeclaration 
+    | importDeclaration 
+    | typeDeclaration
+    ;
+
+// packageDeclaration
+packageDeclaration
+    : annotation* 'package' qualifiedName  
+    ;
+
+importDeclaration
+    : 'import' qualifiedName 
+    ;
+typeDeclaration
+    : classModifier* classDeclaration
+    | classModifier* enumDeclaration
+    | classModifier* constDeclaration
+    ;
+
+modifier
+    : classModifier
+    | ( 'native'
+      | 'synchronized'
+      )
+    ;
+classModifier
+    : annotation
+    | ( 'public' 
+      | 'protected'
+      | 'private'
+      | 'static'
+      | 'abstract'
+      | 'final'
+      )
+    ;
+//
+// classDeclaration
+//
+classDeclaration
+    : 'class' IDENTIFIER ('extends' qualifiedName)?
+      ('implements' qualifiedNameList)? 
+     '{' classBodyDeclaration* '}'
+    ;
+classBodyDeclaration
+    : ';'
+    | modifier* memberDeclaration
+    ;
+
+memberDeclaration
+    :methodDeclaration 
+    |variableDeclaration
+    ;
+
+methodDeclaration
+    : 'def' IDENTIFIER formalParameters (':' (type | 'void'))? ('throw' qualifiedNameList)?
+     ( methodBody | ';')
+    ;
+
+variableDeclaration
+    : 'var' IDENTIFIER (':' type)? ( '=' variableInitializer)? 
+    ;
+
+variableInitializer
+    : expression
+    | arrayInitializer
+    | mapInitializer
+    ;
+
+arrayInitializer
+    : '[' (variableInitializer ( ',' variableInitializer)* ','?)? ']'
+    ;
+mapInitializer
+    : '{' (mapItemPairInitializer (',' mapItemPairInitializer)* ','?)? '}'
+    ;
+mapItemPairInitializer
+    : variableInitializer ':' variableInitializer
+    ;
+
+// type definition
+type
+    : primitiveType ('[' ']')*
+    | classType ('[' ']')*
+    | mapType
+    ;
+
+classType
+    : qualifiedName
+    ;
+mapType
+    : 'map' '<' mapItemType ','  mapItemType '>' 
+    ;
+mapItemType
+    : primitiveType
+    | classType
+    ;
+    
+primitiveType
+    : 'bool'
+    | 'char'
+    | 'byte'
+    | 'short'
+    | 'int'
+    | 'long'
+    | 'float'
+    | 'double'
+    | 'string'
+    ;
+
+qualifiedNameList
+    : qualifiedName (',' qualifiedName)*
+    ;
+
+formalParameters
+    : '(' formalParameterList ? ')'
+    ;
+
+formalParameterList
+    : formalParameter (',' formalParameter)*
+    ;
+
+formalParameter
+    : IDENTIFIER ':' type
+    ;
+
+methodBody
+    : block
+    ;
+constructorBody
+    : block
+    ;
+qualifiedName
+    : IDENTIFIER ('.' IDENTIFIER)*
+    ;
+
+/// enum declaration
+enumDeclaration
+    : 'enum' IDENTIFIER enumBody
+    ;
+enumBody
+    : '{' enumBodyDeclaration* '}'
+    ;
+enumBodyDeclaration
+    : IDENTIFIER ('=' constExpression)? ','
+    ;
+constExpression
+    : expression
+    ;
+
+// ANNOTATIONS
+annotation
+    : '@' annotationName ( '('elementValuePairs | elementValue ')' )?
+    ;
+
+annotationName
+    : qualifiedName 
+    ;
+
+elementValuePairs
+    : elementValuePair (',' elementValuePair)*
+    ;
+elementValuePair
+    : IDENTIFIER '=' elementValue
+    ;
+elementValue
+    : expression
+    | annotation
+    ;
+    
+
+    
+//
+// statements
+//
+block
+    : '{' blockStatement* '}'
+    ;
+blockStatement
+    : typeDeclaration
+    | statement
+    ;
+
+statement
+    : localVariableDeclarationStatement
+    | letStatement
+    | ifStatement
+    | forStatement
+    | foreachStatement
+    | doStatement
+    | whileStatement
+    | returnStatement
+    | tryStatement
+    | throwStatement
+    | breakStatement
+    | continueStatement
+    | assertStatement
+    | newStatement
+    | expressionStatement
+    | labelStatement
+    | ';' 
+    ;
+
+// local variable declaration statement
+localVariableDeclarationStatement
+    : variableDeclaration ';' 
+    ;
+
+// let statement
+letStatement
+    : 'let' IDENTIFIER (':' type)? = ('=' variableInitializer)? 
+    ;
+
+// label statement
+labelStatement
+    : IDENTIFIER ':' statement
+    ;
+
+// if statement 
+ifStatement
+    : 'if' '(' expression ')' statement ('else' statement)?
+    ;
+
+// forStatement
+forStatement
+    : 'for' 
+      '('forInitializer?  ';'expression? ';' expressionList? ')'  
+      statement
+    ;
+
+forInitializer
+    : variableDeclaration
+    | expressionList
+    ;
+
+// foreachStatement    
+foreachStatement
+    : 'foreach' '(' foreachVariable (',' foreachVariable)? 'in' iterableObject ')' statement
+    ;
+
+foreachVariable
+     : IDENTIFIER (':' type)?
+     ;
+
+ iterableObject
+    : IDENTIFIER
+    | mapInitializer
+    | arrayInitializer
+    ;
+
+// whileStatement
+whileStatement
+    : 'while' '(' expression ')' statement
+    ;
+
+// doStatement
+doStatement
+    : 'do' statement 'while' '(' expression ')'
+    ;
+
+// switchStatement
+switchStatement
+    : 'switch' '(' expression ')' '{' switchCase*defaultCase? '}'
+    ;
+
+switchCase
+    : ('case' expression ':')+ statement
+    ;
+
+defaultCase
+    : 'default' ':' statement
+    ;
+
+// returnStatement
+returnStatement
+    : 'return' expression? ';'
+    ;
+
+// breakStatement
+breakStatement
+    : 'break' ';'
+    ;
+
+// continueStatement
+continueStatement
+    : 'continue' IDENTIFIER? ';'
+    ;
+
+// assertStatement
+assertStatement
+    : 'assert' '(' expression ')' ';'
+    ;
+
+// throwStatement
+throwStatement
+    : 'throw' expression ';'
+    ;
+
+
+// tryStatement
+tryStatement
+    : 'try' block catchParts? finallyPart?
+    ;
+
+catchParts
+    : catchPart*
+    ;
+catchPart
+    : 'catch' '('catchType IDENTIFIER ')' block 
+    ;
+catchType
+    : qualifiedName ( '|' qualifiedName)*
+    ;
+
+finallyPart
+    : 'finally' block
+    ;
+
+
+// expressionStatement
+expressionStatement
+    : expression ';'
+    ;
+
+//
+// expression
+//
+expressionList
+    : expression (',' expression)*
+    ;
+
+newExpr
+    : 'new' type arguments 
+    ;
+
+expression
+    : assignmentExpr 
+    | conditionalExpr
+    | newExpr 
+    ;
+
+assignableExpr
+    : unaryExpr
+    ;
+
+// assignmentOperator
+assignmentOperator
+    : '='
+    | '+='
+    | '-='
+    | '*='
+    | '/='
+    | '<<='
+    | '>>='
+    | '&='
+    | '|='
+    | '^='
+    | '~='
+    ;
+assignmentExpr
+    : unaryExpr (assignmentOperator expression)?
+    ;
+
+conditionalExpr
+    : logicalOrExpr
+    ;
+
+logicalOrExpr
+    : logicalAndExpr ('||' logicalAndExpr)*
+    ;
+
+logicalAndExpr
+    : bitwiseOrExpr ('&&' bitwiseOrExpr)*
+    ;
+
+bitwiseOrExpr
+    : bitwiseXorExpr ('|' bitwiseXorExpr)*
+    ;
+
+bitwiseXorExpr
+    : bitwiseAndExpr ('^' bitwiseAndExpr)*
+    ;
+
+bitwiseAndExpr
+    : equalityExpr ('&' equalityExpr)*
+    ;
+
+equalityOperator
+    : '=='
+    | '!='
+    ;
+
+equalityExpr
+    : relationalExpr (equalityOperator relationalExpr)*
+    ;
+relationalOperator
+    : '>='
+    | '<='
+    | '>'
+    | '<'
+    ;
+
+relationalExpr
+    : shiftExpr (relationalOperator shiftExpr)*
+    ;
+
+shiftExpr
+    : additiveExpr (shiftOperator additiveExpr)*
+    ;
+
+shiftOperator
+    : '<<'
+    | '>>'
+    ;
+
+additiveExpr
+    : multiplicativeExpr (additiveOperator multiplicativeExpr)*
+    ;
+
+additiveOperator
+    : '+'
+    | '-'
+    ;
+
+multiplicativeExpr
+    : unaryExpr (multiplicativeOperator unaryExpr)*
+    ;
+
+multiplicativeOperator
+    : '*'
+    | '/'
+    | '%'
+    ;
+
+unaryExpr
+    : primaryExpr selector*
+    ;
+
+selector
+    : assignableSelector
+    | arguments
+    ;
+
+newStatement
+    : 'new' IDENTIFIER FormalParameterList 
+    ;
+
+// primary
+primaryExpr
+    : 'self'
+    | 'super'
+    | 'null'
+    | 'true'
+    | 'false'
+    | NUMBER
+    | HEXNUMBER
+    | FLOATNUMBER 
+    | STRING
+    | mapLiteral
+    | arrayLiteral
+    | IDENTIFIER
+    | '(' expression ')'
+    ;
+
+arguments
+    : '(' argumentList? ')'
+    ;
+
+argumentList
+    : expression (',' expression)*
+    ;
+
+assignableSelector
+    : '.'IDENTIFIER
+    | '[' expression ']'
+    ;
+
+arrayLiteral
+    :'[' expressionList? ']'
+    ;
+
+mapLiteral
+    : '{' mapLiteralItems? '}'
+    ;
+
+mapLiteralItems
+    : mapLiteralItem (',' mapLiteralItem)*
+    ;
+
+mapLiteralItem
+    : IDENTIFIER':' expression
+    | STRING ':' expression
+    | NUMBER ':' expression
+    | HEXNUMBER ':' expression
+    ;
+
