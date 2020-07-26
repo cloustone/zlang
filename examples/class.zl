@@ -16,7 +16,6 @@ class GraphicDeviceContext {
     handle:int
 }
 
-
 interface Graphic {
     Draw(context:GraphicDeviceContext)
     Move(x:int, y:int)

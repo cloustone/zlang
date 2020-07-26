@@ -2,6 +2,7 @@
 
 #include <string>
 #include <fstream>
+#include <exception>
 #include "token.h"
 
 using namespace std;
@@ -10,33 +11,47 @@ namespace zl {
 
 class Lexer {
 public:
-    virtual Token* Get() = 0;
-    virtual Token* Peek() = 0;
-    virtual bool Match(int tokenType, Token** token) = 0;
-};
+    // Load source code from specifed fullpath file
+    Lexer(const string& fullpath) throw(std::invalid_argument);
 
+    // Load source code from specified string buffer
+    Lexer(const char* codes) throw(std::invalid_argument);
+    ~Lexer();
 
-// SimpleLexer
-class SimpleLexer : public Lexer {
-public:
-    explicit SimpleLexer(const string& path, const string& file);
-    ~SimpleLexer();
-    Token* Get();
-    Token* Peek();
+    // Return the next token in lexer
+    const Token Next() { return NextToken(); }
+
+    // Peek the next token
+    const Token Peek() { return NextToken(true); }
+
+    // Check wetther the next token is specified token, return the mached token
+    // if matched
     bool Match(int tokenType, Token** token);
+
 private:
-    SimpleLexer();
-    char GetChar();
-    void PutChar(char ch);
-    void PushToken(Token* token);
-    string GetAtomString(char ch);
-    Token* ParseDigitLiteral(char ch);
-    Token* ParseKeyWord(const string& name);
+    Token NextToken(bool mark = false);
+    Token ParseStringLiteral(char ch);
+    Token ParseDigitalLiteral(char ch);
+    Token ParseIdentifier(char ch);
+    Token ParseAlphaToken(char ch);
+    std::string GetAtomString(char ch);
+
+    char  NextChar() {
+        if (index_ == bufSize_)
+            return EOF;
+        char ch = *(buf_ + index_); 
+        index_++;
+        return ch;
+    }
+
 private:
-    ifstream ifs_;
-    string file_;
-    string path_;
     string fullFileName_;
+    int fd_ = -1;
+    const char* buf_;
+    size_t bufSize_;
+    int mark_ = 0;
+    int index_ = 0;
+    int lineno_ = 0;
 };
 
 } // namespace zl
