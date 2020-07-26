@@ -6,11 +6,48 @@
 #include <unistd.h>
 //#include <error.h>
 #include "lexer.h"
+#include <map>
+#include <string>
 
 namespace zl {
 
+// Map betweend keyword and name
+struct {
+    std::string name;
+    int type;
+} keywords_[] = {
+    { "package",    Token::PACKAGE },
+    { "import",     Token::IMPORT },
+    { "class",      Token::CLASS },
+    { "interface",  Token::INTERFACE },
+    { "extends",    Token::EXTENDS },
+    { "final",      Token::FINAL},
+    { "implements", Token::IMPLEMENTS },
+    { "var",        Token::VAR },
+    { "if",         Token::IF },
+    { "while",      Token::WHILE },
+};
+static std::map<std::string, int> keywordMaps_;
+
+static void InitializeKeywords() {
+    static bool initialized = false;
+    if (!initialized) {
+        for (auto &kd :keywords_) {
+            keywordMaps_[kd.name] = kd.type;
+        }
+        initialized = true;
+    }
+}
+
+static int GetKeyword(const std::string& name) {
+    std::map<std::string, int>::iterator iter = keywordMaps_.find(name);
+    if (iter != keywordMaps_.end()) 
+        return iter->second;
+    return -1;
+}
+
 // Load source code from specifed fullpath file
-Lexer::Lexer(const string& fullpath) throw (std::invalid_argument) {
+Lexer::Lexer(const string& fullpath)  {
     struct stat sb;
     if ((fd_ = open(fullpath.c_str(), O_RDWR)) < 0) 
         throw std::invalid_argument("file no exist");
@@ -22,15 +59,17 @@ Lexer::Lexer(const string& fullpath) throw (std::invalid_argument) {
     bufSize_ = sb.st_size;
     fullFileName_ = fullpath;
     mark_ = 0;
+    InitializeKeywords();
 }
 
 // Load source code from specified string buffer
-Lexer::Lexer(const char* codes) throw(std::invalid_argument) {
+Lexer::Lexer(const char* codes) {
     if (codes == nullptr) 
         throw std::invalid_argument("invalid code buffer");
     fd_ = -1;
     buf_ = codes;
     mark_ = 0;
+    InitializeKeywords();
 }
 
 
@@ -45,22 +84,60 @@ Lexer::~Lexer() {
 
 // The function retrieve a while string from current index
 std::string Lexer::GetAtomString(char ch) {
-    return std::string("");
+    std::string atom;
+    atom = ch;
+
+    while (((ch = NextChar()) != EOF)) {
+        if (isalpha(ch)) {
+            atom += ch;
+        } else {
+            PutbackChar();
+            break;
+        }
+    }
+    return atom;
 }
 
 Token Lexer::ParseStringLiteral(char ch) {
+    std::string atom;
+
+    while (((ch = NextChar()) != EOF)) {
+        if (ch == '"') 
+            return Token(atom, Token::ID, lineno_++);
+        else if (isalpha(ch)) 
+            atom += ch;
+        else{
+            PutbackChar();
+            return Token(atom, Token::ID, lineno_++);
+        }
+    }
     return Token();
 }
 
 Token Lexer::ParseDigitalLiteral(char ch) {
-    return Token();
-}
-Token Lexer::ParseIdentifier(char ch) {
+    std::string atom;
+    atom = ch;
+
+    while (((ch = NextChar()) != EOF)) {
+        if (isdigit(ch)) 
+            atom += ch;
+        else{
+            PutbackChar();
+            return Token(atom, Token::DIGITAL, lineno_++);
+        }
+    }
     return Token();
 }
 
+// AlphaToken may be identifier or keyword
 Token Lexer::ParseAlphaToken(char ch) {
-    return Token();
+    std::string id = GetAtomString(ch);
+    int tokenType = GetKeyword(id);
+
+    if (tokenType > 0) 
+        return Token(id, tokenType, lineno_++);
+    else 
+        return Token(id, Token::ID, lineno_++);
 }
 
 // The function return next token internal

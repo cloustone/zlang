@@ -12,10 +12,10 @@ namespace zl {
 class Lexer {
 public:
     // Load source code from specifed fullpath file
-    Lexer(const string& fullpath) throw(std::invalid_argument);
+    Lexer(const string& fullpath);
 
     // Load source code from specified string buffer
-    Lexer(const char* codes) throw(std::invalid_argument);
+    Lexer(const char* codes);
     ~Lexer();
 
     // Return the next token in lexer
@@ -27,31 +27,40 @@ public:
     // Check wetther the next token is specified token, return the mached token
     // if matched
     bool Match(int tokenType, Token** token);
+    bool Match(char ch);
 
 private:
     Token NextToken(bool mark = false);
     Token ParseStringLiteral(char ch);
     Token ParseDigitalLiteral(char ch);
-    Token ParseIdentifier(char ch);
     Token ParseAlphaToken(char ch);
     std::string GetAtomString(char ch);
 
-    char  NextChar() {
+    char NextChar() {
         if (index_ == bufSize_)
             return EOF;
         char ch = *(buf_ + index_); 
         index_++;
         return ch;
     }
+    void PutbackChar(){
+        index_--;
+    }
 
 private:
-    string fullFileName_;
-    int fd_ = -1;
+    // the source file full path name
+    std::string fullFileName_;
+    // file descriptor for source file
+    int fd_;
+    // buffer pointer to mmaped buffer or user input buffer
     const char* buf_;
     size_t bufSize_;
-    int mark_ = 0;
-    int index_ = 0;
-    int lineno_ = 0;
+    // mark indication to current index postion, using in peek
+    int mark_;
+    // current char index
+    int index_;
+    // current line number
+    int lineno_;
 };
 
 } // namespace zl
