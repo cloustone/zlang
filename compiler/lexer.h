@@ -21,13 +21,16 @@ public:
     // Return the next token in lexer
     const Token Next() { return NextToken(); }
 
+    // Return the previous token position
+    void Back();
+
     // Peek the next token
     const Token Peek() { return NextToken(true); }
 
     // Check wetther the next token is specified token, return the mached token
     // if matched
-    bool Match(int tokenType, Token** token);
-    bool Match(char ch);
+    bool Match(int tokenType, Token** token = nullptr) { return false;}
+    bool Match(char ch) { return false;}
 
 private:
     Token NextToken(bool mark = false);
@@ -35,6 +38,8 @@ private:
     Token ParseDigitalLiteral(char ch);
     Token ParseAlphaToken(char ch);
     std::string GetAtomString(char ch);
+    void UpdateMark() { mark_ = index_; }
+    void PutbackChar(){ index_--; }
 
     char NextChar() {
         if (index_ == bufSize_)
@@ -42,9 +47,6 @@ private:
         char ch = *(buf_ + index_); 
         index_++;
         return ch;
-    }
-    void PutbackChar(){
-        index_--;
     }
 
 private:
@@ -55,7 +57,7 @@ private:
     // buffer pointer to mmaped buffer or user input buffer
     const char* buf_;
     size_t bufSize_;
-    // mark indication to current index postion, using in peek
+    // mark indication to current index postion, using in peek or back
     int mark_;
     // current char index
     int index_;

@@ -82,6 +82,11 @@ Lexer::~Lexer() {
     buf_ = nullptr;
 }
 
+// Back return the previous token position
+void Lexer::Back() {
+    index_ = mark_;
+}
+
 // The function retrieve a while string from current index
 std::string Lexer::GetAtomString(char ch) {
     std::string atom;
@@ -181,6 +186,7 @@ Token Lexer::NextToken(bool mark) {
             case '#':
             case '~':
             case '`':
+                UpdateMark();
                 return Token(ch, Token::OP, lineno_);
             case '\r':
                 continue;
@@ -193,8 +199,10 @@ Token Lexer::NextToken(bool mark) {
                 break;
 
             case '"':
+                UpdateMark();
                 return ParseStringLiteral(ch);
             default:
+                UpdateMark();
                 if (isdigit(ch))
                     return ParseDigitalLiteral(ch);
                 if (isalpha(ch))

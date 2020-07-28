@@ -11,7 +11,7 @@ declaration
 
 // packageDeclaration
 packageDeclaration
-    : annotation* 'package' qualifiedName  
+    : 'package' qualifiedName  
     ;
 
 importDeclaration
