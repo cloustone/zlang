@@ -6,7 +6,7 @@ namespace zl {
 class Token {
 public:
     enum TokenType { UNKNOWN, PACKAGE, IMPORT, OP, STRING, ID, DIGITAL, CLASS, INTERFACE, LET, VAR, DEF,
-        IF, WHILE, IN, FOR, PUBLIC, FINAL, EXTENDS, IMPLEMENTS, BOOL
+        IF, WHILE, IN, FOR, PUBLIC, PRIVATE,  FINAL, EXTENDS, IMPLEMENTS, BOOL, USING, FUNCTION, ASSIGN,
     };
 public:
     string assic_;

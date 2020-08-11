@@ -1,12 +1,11 @@
 // test souce for class
 
 import system.io
-import system.graphics
 import system.file
 
 package graphics
 
-var (
+private var (
     globalSample:int
     globalGraphic:Graphic
 )
@@ -21,14 +20,15 @@ var (
     globalVar2: string
 )
 
-private GetGrapchicHandle():Graphics {
-    return globalGraphic
+func GetGrapchicHandle():(Graphics, error) {
+    return globalGraphic, nil
 }
 
+using GraphicsDeviceContext DeviceContext
 
 class GraphicDeviceContext {
     GraphicDeviceContext(handle:int)
-    GetHandle() ->int {
+    GetHandle():int {
         return self.handle
     }
 private:

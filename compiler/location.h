@@ -21,19 +21,6 @@ public:
     void operator = (int v) { lineno_ = v; }
 };
 
-class LocationManager {
-public:
-    LocationManager(){}
-    ~LocationManager(){}
-    void SetCompileSourceFile(const string& file) { sourceFile_ = file; }
-    void SetCompileSourcePath(const string& path) { sourcePath_ = path; }
-    const string& GetCompileSourceFile() { return sourceFile_; }
-    const string& GetCompileSourcePath() { return sourcePath_; }
-private:
-    string sourceFile_;
-    string sourcePath_;
-};
-
 } // namespace zl
 
 

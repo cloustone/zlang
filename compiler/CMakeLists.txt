@@ -11,7 +11,7 @@ set(CMAKE_MODULE_PATH
 
 set($(PROJECT_NAME)_MAJOR_VERSION 0)
 set($(PROJECT_NAME)_MINOR_VERSION 1)
-
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 #allow more human readalbe "if then else" construct
 set(CMAKE_ALLOW_LOOSE_LOOP_CONSTRUCTS TRUE)
 

@@ -1,12 +1,17 @@
 // zlang grammar definition
 compilationUnit
-    : declaration* EOF
+    : scopeModifier? declaration* EOF
     ;
 
 declaration
     : packageDeclaration 
     | importDeclaration 
-    | typeDeclaration
+    | usingDeclaration
+    | constDeclaration
+    | varBlockDeclaration
+    | functionDeclaration
+    | classDeclaration
+    | interfaceDeclaration
     ;
 
 // packageDeclaration
@@ -17,32 +22,27 @@ packageDeclaration
 importDeclaration
     : 'import' qualifiedName 
     ;
-typeDeclaration
-    : classModifier* classDeclaration
-    | classModifier* enumDeclaration
-    | classModifier* constDeclaration
-    | classModifier* interfaceDeclaration
+
+usingDeclaration
+    : 'using' qualifiedName '=' IDENTIFIER
     ;
 
-modifier
-    : classModifier
-    | ( 'native'
-      | 'synchronized'
-      )
+scopeModifier
+    : 'public' | 'private' 
     ;
-classModifier
-    : annotation
-    | ( 'public' 
-      | 'protected'
-      | 'private'
-      | 'static'
-      | 'abstract'
-      | 'final'
-      )
+
+varDeclaration
+    : 'var'  varBlockDeclaration | singleVarDeclaration
     ;
-//
-// classDeclaration
-//
+
+varBlockDeclaration
+    :  '(' singleVarDeclaration* ')'
+    ;
+
+singleVarDeclaration:
+    : IDENTIFIER ':" IDENTIFIER ('=' expression)?
+    ;
+
 classDeclaration
     : 'class' IDENTIFIER ('extends' qualifiedName)?
       ('implements' qualifiedNameList)? 

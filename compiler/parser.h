@@ -17,6 +17,7 @@ public:
     int type_;
     Node* parent_;
     std::vector<Node*> childs_;
+    bool public_;
 
 public:
     Node() {}
@@ -24,6 +25,8 @@ public:
     ~Node() {}
     int ChildNumber() { return childs_.size(); }
     void AddChild(const Node* node) {}
+    bool IsPublic() const { return public_; }
+    void SetPublic(bool publicity) { public_ = publicity; }
 };
 
 class Parser {
@@ -36,6 +39,8 @@ private:
     Parser() = delete;
     // The function just output systax error messge to ErrorHandler
     void SyntaxErrorAt(const Token& token, const std::string& msg);
+    void SyntaxErrorAt(const Location& location, const std::string& msg);
+    void SyntaxError(const std::string& msg);
 
     // The function will advance token until one of followset found
     // The followset is the list of valid tokens that can follow a production,
@@ -44,14 +49,19 @@ private:
     void Advance(const std::vector<int>& followset);
 
     // compilationUnit
-    //    : declaration* EOF
+    //    : scopeModifier? declaration* EOF
     //    ;
     Node* ParseCompilationUnit();
 
     // declaration
-    //   : packageDeclaration 
+    //    : packageDeclaration 
     //    | importDeclaration 
-    //    | typeDeclaration
+    //    | usingDeclaration
+    //    | constDeclaration
+    //    | varDeclaration
+    //    | functionDeclaration
+    //    | classDeclaration
+    //    | interfaceDeclaration
     //    ;
     Node* ParseDeclaration();
     
@@ -64,18 +74,28 @@ private:
     //    ;
     Node* ParseImportDeclaration();
 
-    // typeDeclaration
-    //    : classModifier* classDeclaration
-    //    | classModifier* enumDeclaration
-    //    | classModifier* constDeclaration
+    // usingDeclaration
+    //    : 'using' qualifiedName '=' IDENTIFIER
     //    ;
-    Node* ParseTypeDeclaration();
+    Node* ParseUsingDeclaration();
 
-    // classModifier
-    //    : annotation
-    //    | ( 'public' | 'protected' | 'private' | 'static' | 'abstract' | 'final')
+    // varDeclaration
+    //        : 'var' varBlockDeclaration | singleVarDeclaration
+    //        ;
+    Node* ParseVarDeclarartion();
+
+    // varBlockDeclaration
+    //    : '(' singleVarDeclaration* ')'
     //    ;
-    Node* ParseClassMofidier();
+    Node* ParseVarBlockDeclaration();
+
+    // singleVarDeclaration:
+    //    : IDENTIFIER ':" IDENTIFIER ('=' expression)?
+    //    ;
+    Node* ParseSingleVarDeclaration();
+
+    Node* ParseConstDeclaration();
+    Node* ParseFunctionDeclaration();
 
     // classDeclaration
     //    : 'class' IDENTIFIER ('extends' qualifiedName)?
@@ -83,9 +103,8 @@ private:
     //     '{' classBodyDeclaration* '}'
     //    ;
     Node* ParseClassDeclaration();
-    Node* ParseEnumDeclaration();
-    Node* ParseConstDeclaration();
-    Node* ParseModifier();
+    Node* ParseInterfaceDeclaration();
+
     Node* ParseClassBodyDeclaration();
     Node* ParseMemberDeclaration();
     Node* ParseMethodDeclaration();
@@ -108,6 +127,26 @@ class ImportDeclNode : public Node {
 public:
     explicit ImportDeclNode(const Location& location, Node* child);
 };
+class UsingDeclNode : public Node {
+public:
+    explicit UsingDeclNode(const Location& location, Node* qualifiedName, const Token& token) {}
+};
+
+class VarBlockDeclNode : public Node {
+public:
+    explicit VarBlockDeclNode(const Location& location, std::vector<Node*>& nodes) {}
+};
+
+class VarDeclNode : public Node {
+public:
+    explicit VarDeclNode(const Location& location, std::vector<Node*>& nodes) {}
+};
+
+
+
+
+
+
 
 
 } // namespace zl

@@ -29,8 +29,10 @@ public:
 
     // Check wetther the next token is specified token, return the mached token
     // if matched
-    bool Match(int tokenType, Token** token = nullptr) { return false;}
+    bool Match(int tokenType, Token* token = nullptr) { return false;}
     bool Match(char ch) { return false;}
+    bool Eof() const { return  false; }
+    Location GetLocation() const { return Location(lineno_); }
 
 private:
     Token NextToken(bool mark = false);
