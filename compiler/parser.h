@@ -4,6 +4,8 @@
 #include <vector>
 #include "token.h"
 #include "lexer.h"
+#include "error_handler.h"
+#include "program_handler.h"
 
 namespace zl {
 
@@ -26,16 +28,60 @@ public:
 
 class Parser {
 public:
-    explicit Parser(Lexer& lexer):lexer_(lexer) {}
+    explicit Parser(Lexer& lexer, ProgramHandler& programHandler, ErrorHandler& errorHandler):
+        lexer_(lexer), programHandler_(programHandler), errorHandler_(errorHandler) {}
     ~Parser() {}
     Node* Build();
 private:
-    Parser();
+    Parser() = delete;
+    // The function just output systax error messge to ErrorHandler
+    void SyntaxErrorAt(const Token& token, const std::string& msg);
+
+    // The function will advance token until one of followset found
+    // The followset is the list of valid tokens that can follow a production,
+    // if it is empty, exactly one (non-EOF) token is consumed to ensure progress.
+    void Advance(int followset[]);
+    void Advance(const std::vector<int>& followset);
+
+    // compilationUnit
+    //    : declaration* EOF
+    //    ;
     Node* ParseCompilationUnit();
+
+    // declaration
+    //   : packageDeclaration 
+    //    | importDeclaration 
+    //    | typeDeclaration
+    //    ;
     Node* ParseDeclaration();
+    
+    // packageDeclaration
+    //    : 'package' qualifiedName  
     Node* ParsePackageDeclaration();
+
+    // importDeclaration
+    //   : 'import' qualifiedName 
+    //    ;
     Node* ParseImportDeclaration();
+
+    // typeDeclaration
+    //    : classModifier* classDeclaration
+    //    | classModifier* enumDeclaration
+    //    | classModifier* constDeclaration
+    //    ;
     Node* ParseTypeDeclaration();
+
+    // classModifier
+    //    : annotation
+    //    | ( 'public' | 'protected' | 'private' | 'static' | 'abstract' | 'final')
+    //    ;
+    Node* ParseClassMofidier();
+
+    // classDeclaration
+    //    : 'class' IDENTIFIER ('extends' qualifiedName)?
+    //      ('implements' qualifiedNameList)? 
+    //     '{' classBodyDeclaration* '}'
+    //    ;
     Node* ParseClassDeclaration();
     Node* ParseEnumDeclaration();
     Node* ParseConstDeclaration();
@@ -49,12 +95,19 @@ private:
     Node* ParseMapInitializer();
     Node* ParseQualifiedName();
 private:
-    Node* root_;
     Lexer& lexer_;
+    ProgramHandler& programHandler_;
+    ErrorHandler& errorHandler_;
 };
 
-class PackageDeclNode : public Node {};
-class ImportDeclNaode : public Node {};
+class PackageDeclNode : public Node {
+public:
+    explicit PackageDeclNode(const Location& location, Node* child) {}
+};
+class ImportDeclNode : public Node {
+public:
+    explicit ImportDeclNode(const Location& location, Node* child);
+};
 
 
 } // namespace zl

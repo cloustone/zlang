@@ -6,14 +6,36 @@ import system.file
 
 package graphics
 
+var (
+    globalSample:int
+    globalGraphic:Graphic
+)
+
+const (
+    globalValue1:int = 2
+    globalValue2:string = "hello, zlang"
+)
+
+var (
+    globalVar1: int
+    globalVar2: string
+)
+
+private GetGrapchicHandle():Graphics {
+    return globalGraphic
+}
+
+
 class GraphicDeviceContext {
     GraphicDeviceContext(handle:int)
-    ~GraphicDeviceContext()
-    getHandle():int {
+    GetHandle() ->int {
         return self.handle
     }
-
+private:
     handle:int
+    GetInternalHandle():int {
+        return 0
+    }
 }
 
 interface Graphic {

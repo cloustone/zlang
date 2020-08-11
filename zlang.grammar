@@ -21,6 +21,7 @@ typeDeclaration
     : classModifier* classDeclaration
     | classModifier* enumDeclaration
     | classModifier* constDeclaration
+    | classModifier* interfaceDeclaration
     ;
 
 modifier

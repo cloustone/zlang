@@ -9,10 +9,11 @@ Node* Parser::Build() {
 // ParseCompilationUnit will iterate all tokens to match declarations
 Node* Parser::ParseCompilationUnit() { 
     Node* root = new Node();
-    Node* child;
 
-    while ((child = ParseDeclaration()) != nullptr)
-        root->AddChild(child);
+    while (Node* node= ParseDeclaration()) {
+        if (node)
+            root->AddChild(node);
+    }
     return root; 
 }
 
@@ -28,12 +29,10 @@ Node* Parser::ParseDeclaration() {
 // packageDeclaration
 //    : 'package' qualifiedName  
 Node* Parser::ParsePackageDeclaration() { 
-    lexer_.Next(); // skip 'package' token
+    auto location = lexer_.Next().location_; // skip 'package' token
     Node* child = ParseQualifiedName();
     if (child) {
-        Node* node = new PackageDeclNode();
-        node->AddChild(child);
-        return node;
+        return new PackageDeclNode(location, child);
     }
     return nullptr; 
 }

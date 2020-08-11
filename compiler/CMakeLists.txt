@@ -16,11 +16,11 @@ set($(PROJECT_NAME)_MINOR_VERSION 1)
 set(CMAKE_ALLOW_LOOSE_LOOP_CONSTRUCTS TRUE)
 
 # cmake project name, default language is cxx
-PROJECT(ZCC CXX)
+PROJECT(ZLC CXX)
 
 # project version
 set(${PROJECT_NAME}_PATCH_LEVEL 0)
-set(TARGET_NAME zcc)
+set(TARGET_NAME zlc)
 
 message("Project cmake current directory = ${CMAKE_CURRENT_SOURCE_DIR}")
 
