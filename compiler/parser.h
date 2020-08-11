@@ -6,28 +6,9 @@
 #include "lexer.h"
 #include "error_handler.h"
 #include "program_handler.h"
+#include "parser_node.h"
 
 namespace zl {
-
-// Analyze tree declaration
-class Node {
-public:
-    std::string name_;
-    std::string assic_;
-    int type_;
-    Node* parent_;
-    std::vector<Node*> childs_;
-    bool public_;
-
-public:
-    Node() {}
-    Node(const std::string& name, int type, const std::string& val, const Location& location) {}
-    ~Node() {}
-    int ChildNumber() { return childs_.size(); }
-    void AddChild(const Node* node) {}
-    bool IsPublic() const { return public_; }
-    void SetPublic(bool publicity) { public_ = publicity; }
-};
 
 class Parser {
 public:
@@ -113,40 +94,14 @@ private:
     Node* ParseArrayInitializer();
     Node* ParseMapInitializer();
     Node* ParseQualifiedName();
+
+    // Expr
+    Node* ParseExpr() { return nullptr; }
 private:
     Lexer& lexer_;
     ProgramHandler& programHandler_;
     ErrorHandler& errorHandler_;
 };
-
-class PackageDeclNode : public Node {
-public:
-    explicit PackageDeclNode(const Location& location, Node* child) {}
-};
-class ImportDeclNode : public Node {
-public:
-    explicit ImportDeclNode(const Location& location, Node* child);
-};
-class UsingDeclNode : public Node {
-public:
-    explicit UsingDeclNode(const Location& location, Node* qualifiedName, const Token& token) {}
-};
-
-class VarBlockDeclNode : public Node {
-public:
-    explicit VarBlockDeclNode(const Location& location, std::vector<Node*>& nodes) {}
-};
-
-class VarDeclNode : public Node {
-public:
-    explicit VarDeclNode(const Location& location, std::vector<Node*>& nodes) {}
-};
-
-
-
-
-
-
 
 
 } // namespace zl

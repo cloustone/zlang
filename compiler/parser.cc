@@ -24,7 +24,7 @@ compilationUnit
     ;
 */
 Node* Parser::ParseCompilationUnit() { 
-    Node* root = new Node();
+    Node* root = new Node(Location());
 
     while (!lexer_.Eof()) {
         bool publicity = true;
@@ -76,18 +76,16 @@ Node* Parser::ParsePackageDeclaration() {
     auto location = lexer_.Next().location_;
 
     if (Node* child = ParseQualifiedName(); child) 
-        return new PackageDeclNode(location, child);
+        return new Node(Node::Type::PACKAGE, location, child);
 
     SyntaxErrorAt(location, "formal qualified name expected");
     Advance(followSet);
     return nullptr; 
 }
 
-/*
-importDeclaration
-    : 'import' qualifiedName 
-    ;
-*/
+// importDeclaration
+//    : 'import' qualifiedName 
+//    ;
 Node* Parser::ParseImportDeclaration() { 
     static int followSet[] = {
         Token::IMPORT, Token::USING, Token::PACKAGE, Token::CLASS, Token::INTERFACE, Token::FUNCTION,
@@ -95,7 +93,7 @@ Node* Parser::ParseImportDeclaration() {
     auto location = lexer_.Next().location_; // skip 'package' token
 
     if (Node* child = ParseQualifiedName(); child) 
-        return new PackageDeclNode(location, child);
+        return new Node(Node::Type::IMPORT, location, child);
 
     SyntaxErrorAt(location, "formal qualified name expected");
     Advance(followSet);
@@ -122,7 +120,7 @@ Node* Parser::ParseUsingDeclaration() {
         SyntaxError("missing target name in using statement");
         goto failed;
     }
-    return new UsingDeclNode(location, qualifiedName, identifier);
+    return new Node(Node::Type::USING, location, qualifiedName);
 
 failed:
     Advance(followSet);
@@ -162,14 +160,42 @@ Node* Parser::ParseVarBlockDeclaration() {
             return nullptr;
         }
     }
-    return new VarBlockDeclNode(location, nodes);
+    auto varBlockDeclNode = new Node(Node::Type::VARBLOCK, location);
+    for (auto node : nodes) 
+        varBlockDeclNode->AddChild(node);
+    return varBlockDeclNode;
+    
 }
 
 // singleSingleVarDeclaration:
 //    : IDENTIFIER ':' IDENTIFIER ('=' expression)?
 //    ;
 Node* Parser::ParseSingleVarDeclaration() {
-    return nullptr;
+    static int followSet[] = {
+        Token::IMPORT, Token::USING, Token::PACKAGE, Token::CLASS, Token::INTERFACE, Token::FUNCTION, Token::VAR,
+    };
+    auto location = lexer_.Next().location_; 
+    Token varNameToken;
+
+    if (!lexer_.Match(Token::ID, &varNameToken)) {
+        SyntaxError("variable ename unexpected");
+        Advance(followSet);
+        return nullptr;
+    }
+    if (!lexer_.Match(Token::ASSIGN)) {
+        SyntaxError("variable declaration miss '=' symbol");
+        Advance(followSet);
+        return nullptr;
+    }
+    
+    Node* initializationExpr = ParseExpr();
+    if (!initializationExpr) {
+        Advance(followSet);
+        return nullptr;
+    }
+    return new Node(Node::Type::VAR, location,
+            new Node(Node::Type::ID, varNameToken),
+            new Node(Node::Type::EXPR, location, initializationExpr));
 }
 
 

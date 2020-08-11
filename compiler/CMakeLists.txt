@@ -2,6 +2,9 @@
 project(zlang)
 cmake_minimum_required(VERSION 3.1)
 
+# cmake project name, default language is cxx
+PROJECT(ZLC CXX)
+
 # Add path for custom modoules
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_APTH}
@@ -15,8 +18,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 #allow more human readalbe "if then else" construct
 set(CMAKE_ALLOW_LOOSE_LOOP_CONSTRUCTS TRUE)
 
-# cmake project name, default language is cxx
-PROJECT(ZLC CXX)
+add_definitions(-Wall)
 
 # project version
 set(${PROJECT_NAME}_PATCH_LEVEL 0)
