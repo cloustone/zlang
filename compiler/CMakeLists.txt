@@ -19,7 +19,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 set(CMAKE_ALLOW_LOOSE_LOOP_CONSTRUCTS TRUE)
 
 add_definitions(-Wall)
-
+add_definitions(-Wno-unused-private-field)
 # project version
 set(${PROJECT_NAME}_PATCH_LEVEL 0)
 set(TARGET_NAME zlc)
@@ -56,7 +56,6 @@ add_executable(${TARGET_NAME}
 include_directories("${PROJECT_INCLUDE_DIR}")
 
 # c++ definitions
-add_definitions("-Wall")
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_definitions("-DDEBUG")
     add_definitions("-g")
