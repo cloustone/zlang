@@ -26,8 +26,7 @@ private:
     // The function will advance token until one of followset found
     // The followset is the list of valid tokens that can follow a production,
     // if it is empty, exactly one (non-EOF) token is consumed to ensure progress.
-    void Advance(int followset[]);
-    void Advance(const std::vector<int>& followset);
+    void Advance(Node::Type nonterminal);
 
     // compilationUnit
     //    : scopeModifier? declaration* EOF
@@ -63,7 +62,7 @@ private:
     // varDeclaration
     //        : 'var' varBlockDeclaration | singleVarDeclaration
     //        ;
-    Node* ParseVarDeclarartion();
+    Node* ParseVarDeclaration();
 
     // varBlockDeclaration
     //    : '(' singleVarDeclaration* ')'
@@ -75,7 +74,22 @@ private:
     //    ;
     Node* ParseSingleVarDeclaration();
 
+    // constDeclaraton
+    //    : 'const' constBlockDeclaration | singleConstDeclaration
+    //    ;
     Node* ParseConstDeclaration();
+
+    // constBlockDeclaration
+    //    : '(' singleConstDeclaration* ')'
+    //    ;
+    Node* ParseConstBlockDeclaration();
+
+    // singleConstDeclaration
+    //    : IDENTIFIER (':' IDENTIFIER)? ('=' constExpression)?
+    //    ;
+    Node* ParseSingleConstDeclaration();
+
+
     Node* ParseFunctionDeclaration();
 
     // classDeclaration
@@ -97,6 +111,7 @@ private:
 
     // Expr
     Node* ParseExpr() { return nullptr; }
+    Node* ParseConstExpr() { return nullptr; }
 private:
     Lexer& lexer_;
     ProgramHandler& programHandler_;

@@ -7,6 +7,7 @@ class Token {
 public:
     enum TokenType { UNKNOWN, PACKAGE, IMPORT, OP, STRING, ID, DIGITAL, CLASS, INTERFACE, LET, VAR, DEF,
         IF, WHILE, IN, FOR, PUBLIC, PRIVATE,  FINAL, EXTENDS, IMPLEMENTS, BOOL, USING, FUNCTION, ASSIGN,
+        CONST,
     };
 public:
     string assic_;

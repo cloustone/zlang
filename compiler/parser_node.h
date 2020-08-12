@@ -16,10 +16,16 @@ public:
         PACKAGE,
         IMPORT,
         USING,
-        VARBLOCK,
+        VAR_BLOCK,
         VAR,
         ID,
         EXPR,
+        CONST_EXPR,
+        CONST,
+        CONST_BLOCK,
+
+
+        MAX,
     };
 
     Node() = delete;
@@ -35,6 +41,10 @@ public:
 
     template <typename... Node>
     void AddChild(Node*... nodes) {}
+
+    template <typename... Token>
+    void AddChild(Token... tokens) {}
+
 
     bool IsPublic() const { return public_; }
     void SetPublic(bool publicity) { public_ = publicity; }

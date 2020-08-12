@@ -39,8 +39,24 @@ varBlockDeclaration
     :  '(' singleVarDeclaration* ')'
     ;
 
-singleVarDeclaration:
+singleVarDeclaration
     : IDENTIFIER ':" IDENTIFIER ('=' expression)?
+    ;
+
+constDeclaraton
+    : 'const' constBlockDeclaration | singleConstDeclaration
+    ;
+
+constBlockDeclaration
+    : '(' singleConstDeclaration* ')'
+    ;
+
+singleConstDeclaration
+    : IDENTIFIER (':' IDENTIFIER)? ('=' constExpression)?
+    ;
+
+constExpression
+    : expression
     ;
 
 classDeclaration
