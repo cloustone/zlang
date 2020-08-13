@@ -57,11 +57,10 @@ void Parser::Advance(Node::Type nonterminal) {
 }
 
 
-/* ParseCompilationUnit will iterate all tokens to match declarations
-compilationUnit
-    : scopeModifier? declaration* EOF
-    ;
-*/
+// ParseCompilationUnit will iterate all tokens to match declarations
+// compilationUnit
+//    : scopeModifier? declaration* EOF
+//    ;
 Node* Parser::ParseCompilationUnit() { 
     Node* root = new Node(Location());
 
@@ -73,24 +72,23 @@ Node* Parser::ParseCompilationUnit() {
         }
         Node* node= ParseDeclaration();
         if (node) {
-            root->AddChild(node);
+            root->Add(node);
             node->SetPublic(publicity);
         }
     }
     return root; 
 }
-/* Declaration nonterminal parser function 
-declaration
-    : packageDeclaration 
-    | importDeclaration 
-    | usingDeclaration
-    | constDeclaration
-    | varDeclaration
-    | functionDeclaration
-    | classDeclaration
-    | interfaceDeclaration
-    ;
-*/
+// Declaration nonterminal parser function 
+// declaration
+//    : packageDeclaration 
+//    | importDeclaration 
+//    | usingDeclaration
+//    | constDeclaration
+//    | varDeclaration
+//    | functionDeclaration
+//    | classDeclaration
+//    | interfaceDeclaration
+//    ;
 Node* Parser::ParseDeclaration() { 
     if (lexer_.Match(Token::PACKAGE))
         return ParsePackageDeclaration();
@@ -194,11 +192,7 @@ Node* Parser::ParseVarBlockDeclaration() {
             return nullptr;
         }
     }
-    auto varBlockDeclNode = new Node(Node::Type::VAR_BLOCK, location);
-    for (auto node : nodes) 
-        varBlockDeclNode->AddChild(node);
-    return varBlockDeclNode;
-    
+    return  new Node(Node::Type::VAR_BLOCK, location, nodes);
 }
 
 // singleSingleVarDeclaration:
@@ -256,12 +250,8 @@ Node* Parser::ParseConstBlockDeclaration() {
             break;
         }
     }
-    if (!declarations.empty()) {
-        auto constBlockDeclNode = new Node(Node::Type::CONST_BLOCK, location);
-        for (auto decl: declarations) 
-            constBlockDeclNode->AddChild(decl);
-        return constBlockDeclNode;
-    }
+    if (!declarations.empty()) 
+        return  new Node(Node::Type::CONST_BLOCK, location, declarations);
     SyntaxErrorAt(location, "no valid const declaration found");
     return nullptr;
 }
@@ -298,13 +288,9 @@ Node* Parser::ParseSingleConstDeclaration() {
             return nullptr;
         }
     }
-    Node* varDeclaration = new Node(Node::Type::VAR, location, nameToken); 
-    if (nameToken.Valid())
-        varDeclaration->AddChild(nameToken);
-    if (typeToken.Valid())
-        varDeclaration->AddChild(typeToken);
+    Node* varDeclaration = new Node(Node::Type::VAR, location, nameToken, typeToken); 
     if (constExpr)
-        varDeclaration->AddChild(constExpr);
+        varDeclaration->Add(constExpr);
 
     return varDeclaration;
 }
@@ -320,8 +306,6 @@ Node* Parser::ParseClassBodyDeclaration(){ return nullptr; }
 Node* Parser::ParseMemberDeclaration(){ return nullptr; }
 
 Node* Parser::ParseMethodDeclaration(){ return nullptr; }
-
-Node* Parser::ParseVariableDeclaration(){ return nullptr; }
 
 Node* Parser::ParseVariableInitializer(){ return nullptr; }
 

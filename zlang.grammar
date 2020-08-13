@@ -40,7 +40,7 @@ varBlockDeclaration
     ;
 
 singleVarDeclaration
-    : IDENTIFIER ':" IDENTIFIER ('=' expression)?
+    : IDENTIFIER ':" IDENTIFIER ('=' variableInitializer)?
     ;
 
 constDeclaraton
@@ -52,51 +52,38 @@ constBlockDeclaration
     ;
 
 singleConstDeclaration
-    : IDENTIFIER (':' IDENTIFIER)? ('=' constExpression)?
+    : IDENTIFIER (':' IDENTIFIER)? ('=' variableInitializer)?
     ;
 
 constExpression
     : expression
     ;
 
-classDeclaration
-    : 'class' IDENTIFIER ('extends' qualifiedName)?
-      ('implements' qualifiedNameList)? 
-     '{' classBodyDeclaration* '}'
-    ;
-classBodyDeclaration
-    : ';'
-    | modifier* memberDeclaration
+functionDeclaration
+    : 'func' IDENTIFIER formalParameters (':' (type | 'void'))? ('throw' qualifiedNameList)?  functionBodyDeclaration
     ;
 
-memberDeclaration
-    :methodDeclaration 
-    |variableDeclaration
+qualifiedNameList
+    : qualifiedName (',' qualifiedName)*
     ;
 
-methodDeclaration
-    : 'def' IDENTIFIER formalParameters (':' (type | 'void'))? ('throw' qualifiedNameList)?
-     ( methodBody | ';')
+formalParameters
+    : '(' formalParameterList ? ')'
     ;
 
-variableDeclaration
-    : 'var' IDENTIFIER (':' type)? ( '=' variableInitializer)? 
+formalParameterList
+    : formalParameter (',' formalParameter)*
     ;
 
-variableInitializer
-    : expression
-    | arrayInitializer
-    | mapInitializer
+formalParameter
+    : IDENTIFIER ':' type
     ;
 
-arrayInitializer
-    : '[' (variableInitializer ( ',' variableInitializer)* ','?)? ']'
+functionBodyDeclaration
+    : block
     ;
-mapInitializer
-    : '{' (mapItemPairInitializer (',' mapItemPairInitializer)* ','?)? '}'
-    ;
-mapItemPairInitializer
-    : variableInitializer ':' variableInitializer
+qualifiedName
+    : IDENTIFIER ('.' IDENTIFIER)*
     ;
 
 // type definition
@@ -129,42 +116,48 @@ primitiveType
     | 'string'
     ;
 
-qualifiedNameList
-    : qualifiedName (',' qualifiedName)*
+
+
+classDeclaration
+    : 'class' IDENTIFIER ('extends' qualifiedName)?
+      ('implements' qualifiedNameList)? 
+     '{' classBodyDeclaration* '}'
+    ;
+classBodyDeclaration
+    : ';'
+    | modifier* memberDeclaration
     ;
 
-formalParameters
-    : '(' formalParameterList ? ')'
+memberDeclaration
+    :methodDeclaration 
+    |variableDeclaration
     ;
 
-formalParameterList
-    : formalParameter (',' formalParameter)*
+methodDeclaration
+    : 'func' IDENTIFIER formalParameters (':' (type | 'void'))? ('throw' qualifiedNameList)?
+     ( methodBody | ';')
     ;
 
-formalParameter
-    : IDENTIFIER ':' type
+variableDeclaration
+    : 'var' IDENTIFIER (':' type)? ( '=' variableInitializer)? 
     ;
 
-methodBody
-    : block
-    ;
-constructorBody
-    : block
-    ;
-qualifiedName
-    : IDENTIFIER ('.' IDENTIFIER)*
+variableInitializer
+    : expression
+    | arrayInitializer
+    | mapInitializer
     ;
 
-/// enum declaration
-enumDeclaration
-    : 'enum' IDENTIFIER enumBody
+arrayInitializer
+    : '[' (variableInitializer ( ',' variableInitializer)* ','?)? ']'
     ;
-enumBody
-    : '{' enumBodyDeclaration* '}'
+mapInitializer
+    : '{' (mapItemPairInitializer (',' mapItemPairInitializer)* ','?)? '}'
     ;
-enumBodyDeclaration
-    : IDENTIFIER ('=' constExpression)? ','
+mapItemPairInitializer
+    : variableInitializer ':' variableInitializer
     ;
+
 constExpression
     : expression
     ;

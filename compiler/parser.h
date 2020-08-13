@@ -91,6 +91,20 @@ private:
 
 
     Node* ParseFunctionDeclaration();
+    Node* ParseFormalParameters();
+    Node* ParseQualifiedNameList();
+    Node* ParseFormalParameterList();
+    Node* ParseFormalParameter();
+    Node* ParseFunctionBodyDeclaration();
+    Node* ParseQualifiedName();
+    Node* ParseVariableInitializer();
+
+    Node* ParseTypeDeclaration();
+    Node* ParseClassType();
+    Node* ParseMapType();
+    Node* ParseMapItemType();
+    Node* ParsePrimitiveType();
+
 
     // classDeclaration
     //    : 'class' IDENTIFIER ('extends' qualifiedName)?
@@ -103,11 +117,8 @@ private:
     Node* ParseClassBodyDeclaration();
     Node* ParseMemberDeclaration();
     Node* ParseMethodDeclaration();
-    Node* ParseVariableDeclaration();
-    Node* ParseVariableInitializer();
     Node* ParseArrayInitializer();
     Node* ParseMapInitializer();
-    Node* ParseQualifiedName();
 
     // Expr
     Node* ParseExpr() { return nullptr; }

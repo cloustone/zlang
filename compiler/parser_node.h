@@ -40,10 +40,10 @@ public:
     int ChildNumber() { return childs_.size(); }
 
     template <typename... Node>
-    void AddChild(Node*... nodes) {}
+    void Add(Node*... nodes) {}
 
     template <typename... Token>
-    void AddChild(Token... tokens) {}
+    void Add(Token... tokens) {}
 
 
     bool IsPublic() const { return public_; }
