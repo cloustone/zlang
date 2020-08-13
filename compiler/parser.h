@@ -70,7 +70,7 @@ private:
     Node* ParseVarBlockDeclaration();
 
     // singleVarDeclaration:
-    //    : IDENTIFIER ':" IDENTIFIER ('=' expression)?
+    //    : IDENTIFIER ':" type ('=' variableInitializer)?
     //    ;
     Node* ParseSingleVarDeclaration();
 
@@ -142,7 +142,7 @@ private:
 
     // classType
     //   : qualifiedName
-    //    ;
+    //   ;
     Node* ParseClassType();
 
     // mapType
