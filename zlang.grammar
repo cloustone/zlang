@@ -60,7 +60,7 @@ constExpression
     ;
 
 functionDeclaration
-    : 'func' IDENTIFIER formalParameters (':' (type | 'void'))? ('throw' qualifiedNameList)?  functionBodyDeclaration
+    : 'func' IDENTIFIER formalParameters (':' functionReturnParameters)?  functionBodyDeclaration
     ;
 
 qualifiedNameList
@@ -79,6 +79,10 @@ formalParameter
     : IDENTIFIER ':' type
     ;
 
+functionReturnParameters
+    : ('void' | type) | ('(' typeList ')')
+    ;
+
 functionBodyDeclaration
     : block
     ;
@@ -91,6 +95,10 @@ type
     : primitiveType ('[' ']')*
     | classType ('[' ']')*
     | mapType
+    ;
+
+typeList
+    : type (',' type)*
     ;
 
 classType

@@ -19,6 +19,7 @@ public:
         return *this;
     }
     void operator = (int v) { lineno_ = v; }
+    bool operator == (const Location& rhs) { return true; /*dummy */}
 };
 
 } // namespace zl

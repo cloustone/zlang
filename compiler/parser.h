@@ -89,23 +89,90 @@ private:
     //    ;
     Node* ParseSingleConstDeclaration();
 
-
+    // functionDeclaration
+    //    : 'func' IDENTIFIER formalParameters (':' functionReturnParameters)?  functionBodyDeclaration
+    //    ;
     Node* ParseFunctionDeclaration();
-    Node* ParseFormalParameters();
-    Node* ParseQualifiedNameList();
-    Node* ParseFormalParameterList();
-    Node* ParseFormalParameter();
-    Node* ParseFunctionBodyDeclaration();
-    Node* ParseQualifiedName();
-    Node* ParseVariableInitializer();
 
+    // formalParameters
+    //    : '(' formalParameterList ? ')'
+    //    ;
+    Node* ParseFormalParameters();
+
+    // qualifiedNameList
+    //    : qualifiedName (',' qualifiedName)*
+    //    ;
+    Node* ParseQualifiedNameList();
+
+    // formalParameterList
+    // : formalParameter (',' formalParameter)*
+    // ;
+    Node* ParseFormalParameterList();
+    // formalParameter
+    // : IDENTIFIER ':' type
+    // ;
+    Node* ParseFormalParameter();
+
+    // functionReturnParameters
+    //    : ('void' | type) | ('(' typeList ')')
+    //    ;
+    Node* ParseFunctionReturnParameters();
+
+    // functionBodyDeclaration
+    //    : block
+    //    ;
+    Node* ParseFunctionBodyDeclaration();
+
+    // qualifiedName
+    //    : IDENTIFIER ('.' IDENTIFIER)*
+    //    ;
+    Node* ParseQualifiedName();
+
+    // type
+    //    : primitiveType ('[' ']')*
+    //    | classType ('[' ']')*
+    //    | mapType
+    //    ;
     Node* ParseTypeDeclaration();
+
+    // typeList
+    //    : type (',' type)*
+    //    ;
+    Node* ParseTypeList();
+
+    // classType
+    //   : qualifiedName
+    //    ;
     Node* ParseClassType();
+
+    // mapType
+    //    : 'map' '<' mapItemType ','  mapItemType '>' 
+    //    ;
     Node* ParseMapType();
+
+    // mapItemType
+    //    : primitiveType
+    //    | classType
+    //    ;
     Node* ParseMapItemType();
+    
+    // primitiveType
+    //    : 'bool'
+    //    | 'char'
+    //    | 'byte'
+    //    | 'short'
+    //    | 'int'
+    //    | 'long'
+    //    | 'float'
+    //    | 'double'
+    //    | 'string'
+    //    ;
     Node* ParsePrimitiveType();
 
+   
+    Node* ParseVariableInitializer();
 
+    
     // classDeclaration
     //    : 'class' IDENTIFIER ('extends' qualifiedName)?
     //      ('implements' qualifiedNameList)? 

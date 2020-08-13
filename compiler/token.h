@@ -9,6 +9,7 @@ public:
         IF, WHILE, IN, FOR, PUBLIC, PRIVATE,  FINAL, EXTENDS, IMPLEMENTS, BOOL, USING, FUNCTION, ASSIGN,
         CONST,
     };
+    static Token InvalidToken;
 public:
     string assic_;
     int type_;
@@ -26,7 +27,10 @@ public:
             assic_ = ch;
         }
     bool Valid() {
-        return assic_ =="";
+        return assic_ =="" || type_ == TokenType::UNKNOWN;
+    }
+    bool operator == (const Token& rhs) {
+        return (this->assic_ == rhs.assic_ && this->location_ == rhs.location_);
     }
 };
 

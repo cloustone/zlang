@@ -23,6 +23,10 @@ public:
         CONST_EXPR,
         CONST,
         CONST_BLOCK,
+        FUNC,
+        FUNC_PARAM,
+        FUNC_BLOCK,
+        FUNC_RET_PARAM,
 
 
         MAX,

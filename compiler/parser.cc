@@ -257,7 +257,7 @@ Node* Parser::ParseConstBlockDeclaration() {
 }
 
 // singleConstDeclaration
-//    : IDENTIFIER (':' IDENTIFIER)? ('=' constExpression)?
+//    : IDENTIFIER (':' IDENTIFIER)? ('=' variablieInitialization)?
 //    ;
 Node* Parser::ParseSingleConstDeclaration() {
     Token nameToken, typeToken;
@@ -266,38 +266,156 @@ Node* Parser::ParseSingleConstDeclaration() {
     if (!lexer_.Match(Token::ID, &nameToken)) {
         SyntaxError("expected const identifier token missed");
         Advance(Node::Type::VAR);
-        return nullptr;
     }
 
     // Const identifier have a type constraint
     if (lexer_.Match(':')) {
         lexer_.Next();
          if (!lexer_.Match(Token::ID, &typeToken)) {
-            SyntaxError("no type identifier found in const declaration");
             Advance(Node::Type::VAR);
-            return nullptr;
         }
     }
 
-    Node* constExpr = nullptr;
+    Node* variableInitializer = nullptr;
     if (lexer_.Match(Token::ASSIGN)) {
         lexer_.Next();
-        if (constExpr = ParseConstExpr(); !constExpr) {
+        if (variableInitializer = ParseVariableInitializer(); !variableInitializer) {
             SyntaxError("wrong const expression found");
-            Advance(Node::Type::VAR);
-            return nullptr;
         }
     }
     Node* varDeclaration = new Node(Node::Type::VAR, location, nameToken, typeToken); 
-    if (constExpr)
-        varDeclaration->Add(constExpr);
+    varDeclaration->Add(variableInitializer);
 
     return varDeclaration;
 }
 
+// functionDeclaration
+//    : 'func' IDENTIFIER formalParameters (':' functionReturnParameters)?  functionBodyDeclaration
+//    ;
+Node* Parser::ParseFunctionDeclaration() {
+    auto location = lexer_.Next().location_;  // skip 'func'
+    Token funcNameToken;
+
+    if (!lexer_.Match(Token::ID, &funcNameToken)) {
+        SyntaxError("function name missed");
+        Advance(Node::Type::FUNC);
+        // Parser continue to parser the left declaration without return
+        // nullptr
+    }
+    Node* formalParameters = ParseFormalParameters();
+    Node* returnParameters = nullptr;
+    if (lexer_.Match(':')) {
+        lexer_.Next();
+        returnParameters = ParseFunctionReturnParameters();
+    }
+    Node* bodyDeclaration = ParseFunctionBodyDeclaration();
+    return new Node(Node::Type::FUNC, location, formalParameters, returnParameters, bodyDeclaration);
+}
+
+// formalParameters
+//    : '(' formalParameterList ? ')'
+//    ;
+Node* Parser::ParseFormalParameters() {
+    return nullptr;
+}
+
+// qualifiedNameList
+//    : qualifiedName (',' qualifiedName)*
+//    ;
+Node* Parser::ParseQualifiedNameList() {
+    return nullptr;
+}
+
+// formalParameterList
+// : formalParameter (',' formalParameter)*
+// ;
+Node* Parser::ParseFormalParameterList() {
+    return nullptr;
+}
+
+// formalParameter
+// : IDENTIFIER ':' type
+// ;
+Node* Parser::ParseFormalParameter() {
+    return nullptr;
+}
+
+// functionReturnParameters
+//    : ('void' | type) | ('(' typeList ')')
+//    ;
+Node* Parser::ParseFunctionReturnParameters() {
+    return nullptr;
+}
+
+// functionBodyDeclaration
+//    : block
+//    ;
+Node* Parser::ParseFunctionBodyDeclaration() {
+    return nullptr;
+}
+
+// qualifiedName
+//    : IDENTIFIER ('.' IDENTIFIER)*
+//    ;
+Node* Parser::ParseQualifiedName() {
+    return nullptr;
+}
+
+// type
+//    : primitiveType ('[' ']')*
+//    | classType ('[' ']')*
+//    | mapType
+//    ;
+Node* Parser::ParseTypeDeclaration() {
+    return nullptr;
+}
+
+// typeList
+//    : type (',' type)*
+//    ;
+Node* Parser::ParseTypeList() {
+    return nullptr;
+}
+
+// classType
+//   : qualifiedName
+//    ;
+Node* Parser::ParseClassType() {
+    return nullptr;
+}
+
+// mapType
+//    : 'map' '<' mapItemType ','  mapItemType '>' 
+//    ;
+Node* Parser::ParseMapType() {
+    return nullptr;
+}
+
+// mapItemType
+//    : primitiveType
+//    | classType
+//    ;
+Node* Parser::ParseMapItemType() {
+    return nullptr;
+}
+
+// primitiveType
+//    : 'bool'
+//    | 'char'
+//    | 'byte'
+//    | 'short'
+//    | 'int'
+//    | 'long'
+//    | 'float'
+//    | 'double'
+//    | 'string'
+//    ;
+Node* Parser::ParsePrimitiveType() {
+    return nullptr;
+}
 
 
-Node* Parser::ParseFunctionDeclaration(){ return nullptr; }
+
 Node* Parser::ParseInterfaceDeclaration(){ return nullptr; }
 Node* Parser::ParseClassDeclaration(){ return nullptr; }
 
@@ -312,7 +430,6 @@ Node* Parser::ParseVariableInitializer(){ return nullptr; }
 Node* Parser::ParseArrayInitializer(){ return nullptr; }
 
 Node* Parser::ParseMapInitializer(){ return nullptr; }
-Node* Parser::ParseQualifiedName(){ return nullptr; }
 
 
 
