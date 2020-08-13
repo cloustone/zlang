@@ -12,4 +12,5 @@ endif()
 
 PROJECT(zlang CXX)
 
+ADD_SUBDIRECTORY(external/pugixml)
 ADD_SUBDIRECTORY(compiler)
