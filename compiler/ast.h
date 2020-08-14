@@ -233,16 +233,16 @@ public:
 class ConstDecl: public Decl {
 public:
     ConstDecl() = delete;
-    explicit ConstDecl(const Location& location, Identifier* name, Type* type, Expr* initializer)
-        :Decl(location), name_(name), type_(type), initializer_(initializer) {}
+    explicit ConstDecl(const Location& location, Identifier* name, Type* type, VarInitializer* varInitializer)
+        :Decl(location), name_(name), type_(type), varInitializer_(varInitializer) {}
     virtual ~ConstDecl() {
         if (name_) delete name_;
         if (type_) delete type_;
-        if (initializer_) delete initializer_;
+        if (varInitializer_) delete varInitializer_;
     }
     Identifier* name_;
     Type* type_;
-    Expr* initializer_;
+    VarInitializer* varInitializer_;
 };
 
 // constBlockDeclaration
@@ -261,35 +261,36 @@ public:
 
 class FormalParameterList;
 class ReturnParameterList;
-class FunctionBodyDecl;
+class FunctionBlockDecl;
 
 // functionDeclaration
-//    : 'func' IDENTIFIER formalParameters (':' functionReturnParameters)?  functionBodyDeclaration
+//    : 'func' IDENTIFIER formalParameters (':' functionReturnParameters)?  functionBlockDeclaration
 //    ;
 class FunctionDecl: public Decl {
 public:
     FunctionDecl() = delete;
-    explicit FunctionDecl(const Location& location, FormalParameterList* formalParameterList,
-            ReturnParameterList* returnParameterList, FunctionBodyDecl* functionBodyDecl)
-        :Decl(location), formalParameterList_(formalParameterList),
-        returnParameterList_(returnParameterList), functionBodyDecl_(functionBodyDecl) {}
+    explicit FunctionDecl(const Location& location, Identifier* id, FormalParameterList* formalParameterList,
+            ReturnParameterList* returnParameterList, FunctionBlockDecl* functionBlockDecl)
+        :Decl(location), name_(id), formalParameterList_(formalParameterList),
+        returnParameterList_(returnParameterList), functionBlockDecl_(functionBlockDecl) {}
 
     virtual ~FunctionDecl() {
         if (formalParameterList_) delete formalParameterList_;
         if (returnParameterList_) delete returnParameterList_;
-        if (functionBodyDecl_) delete functionBodyDecl_;
+        if (functionBlockDecl_) delete functionBlockDecl_;
     }
+    Identifier* name_;
     FormalParameterList* formalParameterList_;
     ReturnParameterList* returnParameterList_;
-    FunctionBodyDecl* functionBodyDecl_;
+    FunctionBlockDecl* functionBlockDecl_;
 };
 
-class FunctionBodyDecl: public Decl {
+class FunctionBlockDecl: public Decl {
 public:
-    FunctionBodyDecl() = delete;
-    explicit FunctionBodyDecl(const Location& location, Decl* block)
+    FunctionBlockDecl() = delete;
+    explicit FunctionBlockDecl(const Location& location, Decl* block)
         :Decl(location), block_(block) {}
-    virtual ~FunctionBodyDecl() {
+    virtual ~FunctionBlockDecl() {
         if (block_) delete block_;
     }
     Decl* block_;

@@ -102,22 +102,22 @@ private:
     // constBlockDeclaration
     //    : '(' singleConstDeclaration* ')'
     //    ;
-    ast::Decl* ParseConstBlockDeclaration();
+    ast::ConstBlockDecl* ParseConstBlockDeclaration();
 
     // singleConstDeclaration
     //    : IDENTIFIER (':' IDENTIFIER)? ('=' constExpression)?
     //    ;
-    ast::Decl* ParseSingleConstDeclaration();
+    ast::ConstDecl* ParseSingleConstDeclaration();
 
     // functionDeclaration
     //    : 'func' IDENTIFIER formalParameters (':' functionReturnParameters)?  functionBodyDeclaration
     //    ;
-    ast::Decl* ParseFunctionDeclaration();
+    ast::FunctionDecl* ParseFunctionDeclaration();
 
     // formalParameters
     //    : '(' formalParameterList ? ')'
     //    ;
-    Node* ParseFormalParameters();
+    ast::FormalParameterList* ParseFormalParameters();
 
     // qualifiedNameList
     //    : qualifiedName (',' qualifiedName)*
@@ -127,21 +127,21 @@ private:
     // formalParameterList
     // : formalParameter (',' formalParameter)*
     // ;
-    Node* ParseFormalParameterList();
+    ast::FormalParameterList* ParseFormalParameterList();
     // formalParameter
     // : IDENTIFIER ':' type
     // ;
-    Node* ParseFormalParameter();
+    ast::FormalParameter* ParseFormalParameter();
 
     // functionReturnParameters
     //    : ('void' | type) | ('(' typeList ')')
     //    ;
-    Node* ParseFunctionReturnParameters();
+    ast::ReturnParameterList* ParseFunctionReturnParameters();
 
     // functionBodyDeclaration
     //    : block
     //    ;
-    Node* ParseFunctionBodyDeclaration();
+    ast::FunctionBlockDecl* ParseFunctionBlockDeclaration();
 
     // qualifiedName
     //    : IDENTIFIER ('.' IDENTIFIER)*

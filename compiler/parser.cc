@@ -200,9 +200,7 @@ ast::VariableDecl* Parser::ParseSingleVarDeclaration() {
 //    : 'const' constBlockDeclaration | singleConstDeclaration
 //    ;
 ast::Decl* Parser::ParseConstDeclaration() {
-    lexer_.Next(); 
-
-    if (lexer_.Match('('))
+    if (Match(Token::LPAREN))
         return ParseConstBlockDeclaration();
     else 
         return ParseSingleVarDeclaration();
@@ -211,92 +209,61 @@ ast::Decl* Parser::ParseConstDeclaration() {
 // constBlockDeclaration
 //    : '(' singleConstDeclaration* ')'
 //    ;
-ast::Decl* Parser::ParseConstBlockDeclaration() {
-/*
-    auto location = lexer_.Next().location_;  // skip '('
-    std::vector<Node*> declarations;
+ast::ConstBlockDecl* Parser::ParseConstBlockDeclaration() {
+    std::vector<ast::ConstDecl*> declarations;
 
-    while (!lexer_.Match(')')) {
-        if (Node* node = ParseSingleConstDeclaration(); node)
-            declarations.push_back(node);
-        else  {
-            Advance(CONST_BLOCK);
-            break;
-        }
+    auto location = Expect(Token::LPAREN);
+    while (!Match(Token::RPAREN)) {
+        if (auto decl  = ParseSingleConstDeclaration(); decl)
+            declarations.push_back(decl);
     }
-    if (!declarations.empty()) 
-        return  new Node(CONST_BLOCK, location, declarations);
-    SyntaxErrorAt(location, "no valid const declaration found");
-*/
-    return nullptr;
+    Expect(Token::RPAREN);
+    return new ast::ConstBlockDecl(location, declarations);
 }
 
 // singleConstDeclaration
-//    : IDENTIFIER (':' IDENTIFIER)? ('=' variablieInitialization)?
+//    : IDENTIFIER (':' type)? ('=' variablieInitialization)?
 //    ;
-ast::Decl* Parser::ParseSingleConstDeclaration() {
-    /*
-    Token nameToken, typeToken;
-    auto location = lexer_.GetLocation();
+ast::ConstDecl* Parser::ParseSingleConstDeclaration() {
+    auto location = location_;
+    ast::Type* type = nullptr;
+    ast::VarInitializer* varInitializer = nullptr;
+    auto nameId = ParseIdentifier();
 
-    if (!lexer_.Match(Token::ID, &nameToken)) {
-        SyntaxError("expected const identifier token missed");
-        Advance(VAR);
+    if (Match(Token::COLON)) {
+        Next();
+        type = ParseType();
     }
-
-    // Const identifier have a type constraint
-    if (lexer_.Match(':')) {
-        lexer_.Next();
-         if (!lexer_.Match(Token::ID, &typeToken)) {
-            Advance(VAR);
-        }
+    if (Match(Token::ASSIGN)) {
+        Next();
+        varInitializer = ParseVariableInitializer();
     }
-
-    Node* variableInitializer = nullptr;
-    if (lexer_.Match(Token::ASSIGN)) {
-        lexer_.Next();
-        if (variableInitializer = ParseVariableInitializer(); !variableInitializer) {
-            SyntaxError("wrong const expression found");
-        }
-    }
-    Node* varDeclaration = new Node(VAR, location, nameToken, typeToken); 
-    varDeclaration->Add(variableInitializer);
-
-    return varDeclaration;
-*/
-    return nullptr;
+    return new ast::ConstDecl(location, nameId, type, varInitializer); 
 }
 
 // functionDeclaration
 //    : 'func' IDENTIFIER formalParameters (':' functionReturnParameters)?  functionBodyDeclaration
 //    ;
-ast::Decl* Parser::ParseFunctionDeclaration() {
-/*
-    auto location = lexer_.Next().location_;  // skip 'func'
-    Token funcNameToken;
+ast::FunctionDecl* Parser::ParseFunctionDeclaration() {
+    auto location = location_;  
+    auto nameId = ParseIdentifier();
+    auto formalParameters = ParseFormalParameters();
+    ast::ReturnParameterList* returnParams = nullptr;
 
-    if (!lexer_.Match(Token::ID, &funcNameToken)) {
-        SyntaxError("function name missed");
-        Advance(FUNC);
-        // Parser continue to parser the left declaration without return
-        // nullptr
+    if (Match(Token::COLON)) {
+        Next();
+        returnParams = ParseFunctionReturnParameters();
     }
-    Node* formalParameters = ParseFormalParameters();
-    Node* returnParameters = nullptr;
-    if (lexer_.Match(':')) {
-        lexer_.Next();
-        returnParameters = ParseFunctionReturnParameters();
-    }
-    Node* bodyDeclaration = ParseFunctionBodyDeclaration();
-    return new Node(FUNC, location, formalParameters, returnParameters, bodyDeclaration);
-*/
-    return nullptr;
+    auto functionBlockDecl = ParseFunctionBlockDeclaration();
+
+    return new ast::FunctionDecl(location, nameId, formalParameters, 
+            returnParams, functionBlockDecl);
 }
 
 // formalParameters
 //    : '(' formalParameterList ? ')'
 //    ;
-Node* Parser::ParseFormalParameters() {
+ast::FormalParameterList* Parser::ParseFormalParameters() {
     return nullptr;
 }
 
@@ -310,28 +277,28 @@ ast::QualifiedName* Parser::ParseQualifiedNameList() {
 // formalParameterList
 // : formalParameter (',' formalParameter)*
 // ;
-Node* Parser::ParseFormalParameterList() {
+ast::FormalParameterList* Parser::ParseFormalParameterList() {
     return nullptr;
 }
 
 // formalParameter
 // : IDENTIFIER ':' type
 // ;
-Node* Parser::ParseFormalParameter() {
+ast::FormalParameter* Parser::ParseFormalParameter() {
     return nullptr;
 }
 
 // functionReturnParameters
 //    : ('void' | type) | ('(' typeList ')')
 //    ;
-Node* Parser::ParseFunctionReturnParameters() {
+ast::ReturnParameterList* Parser::ParseFunctionReturnParameters() {
     return nullptr;
 }
 
 // functionBodyDeclaration
 //    : block
 //    ;
-Node* Parser::ParseFunctionBodyDeclaration() {
+ast::FunctionBlockDecl* Parser::ParseFunctionBlockDeclaration() {
     return nullptr;
 }
 
