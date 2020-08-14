@@ -129,7 +129,7 @@ public:
         :type_(type), location_(lineno) {
             assic_ = ch;
         }
-    bool Valid() {
+    bool Valid() const {
         return assic_ =="" || type_ == TokenType::ILLEGAL;
     }
     bool operator == (const Token& rhs) {

@@ -48,6 +48,12 @@ public:
     virtual ~Expr() {}
 };
 
+class BadExpr : public Expr {
+public:
+    BadExpr(const Location& location): Expr(location) {}
+    virtual ~BadExpr() {}
+};
+
 // Common declaration 
 class Identifier : public Node {
 public:

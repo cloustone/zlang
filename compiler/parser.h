@@ -24,16 +24,16 @@ private:
     void SyntaxErrorAt(const Token& token, const std::string& msg);
     void SyntaxErrorAt(const Location& location, const std::string& msg);
     void SyntaxError(const std::string& msg);
+    // The function will advance token until one of followset found
+    // The followset is the list of valid tokens that can follow a production,
+    // if it is empty, exactly one (non-EOF) token is consumed to ensure progress.
+    template<typename ...Args>
+    void Advance(Args... args) {}
 
     // SyncStmt advances to the next statement, Used for synchronization after an error.
     void SyncStmt();
     // SyncDecl advances to the next declaration. Used for synchronization after an error.
     void SyncDecl(); 
-    //
-    // The function will advance token until one of followset found
-    // The followset is the list of valid tokens that can follow a production,
-    // if it is empty, exactly one (non-EOF) token is consumed to ensure progress.
-    void Advance(int nonterminal);
 
     // compilationUnit
     //    : scopeModifier? declaration* EOF
@@ -50,7 +50,7 @@ private:
     //    | classDeclaration
     //    | interfaceDeclaration
     //    ;
-    ast::Decl* ParseDeclaration();
+    ast::Decl* ParseDeclaration(const Token& token);
     
     // packageDeclaration
     //    : 'package' qualifiedName  

@@ -24,16 +24,13 @@ void Parser::SyncDecl() {
 //    ;
 void Parser::ParseCompilationUnit(std::vector<Node*>& decls) { 
     while (!lexer_.Eof()) {
-        bool publicity = true;
+        Token token;
         if (lexer_.Match(Token::PRIVATE) || lexer_.Match(Token::PUBLIC))  {
-            publicity = lexer_.Match(Token::PUBLIC);
-            lexer_.Next();
+            token = lexer_.Next();
         }
-        ast::Decl* decl= ParseDeclaration();
-        if (decl) {
-            decl->SetPublic(publicity);
+        ast::Decl* decl = ParseDeclaration(token);
+        if (decl) 
             decls.push_back(decl);
-        }
     }
 }
 
@@ -48,29 +45,45 @@ void Parser::ParseCompilationUnit(std::vector<Node*>& decls) {
 //    | classDeclaration
 //    | interfaceDeclaration
 //    ;
-ast::Decl* Parser::ParseDeclaration() { 
-    if (lexer_.Match(Token::PACKAGE))
-        return ParsePackageDeclaration();
-    else if (lexer_.Match(Token::IMPORT))
-        return ParseImportDeclaration();
-    else if (lexer_.Match(Token::USING))
-        return ParseUsingDeclaration();
-    else if (lexer_.Match(Token::CLASS))
-        return ParseClassDeclaration();
-    else if (lexer_.Match(Token::INTERFACE))
-        return ParseInterfaceDeclaration();
-    else if (lexer_.Match(Token::CONST))
-        return ParseConstDeclaration();
-    else if (lexer_.Match(Token::VAR))
-        return ParseVarDeclaration();
-    else 
-        return ParseFunctionDeclaration();
+ast::Decl* Parser::ParseDeclaration(const Token& publicityToken) { 
+    Token token = lexer_.Next(); 
+
+    switch (token.type_) {
+        case Token::PACKAGE:
+            if (publicityToken.Valid())
+                SyntaxErrorAt(publicityToken.location_, "scope specifier not allowed here");
+            return ParsePackageDeclaration();
+
+        case Token::IMPORT:
+            if (publicityToken.Valid())
+                SyntaxErrorAt(publicityToken.location_, "scope specifier not allowed here");
+            return ParseImportDeclaration();
+
+        case Token::USING:
+            if (publicityToken.Valid())
+                SyntaxErrorAt(publicityToken.location_, "scope specifier not allowed here");
+            return ParseUsingDeclaration();
+
+        case Token::CLASS:
+            return ParseClassDeclaration();
+        case Token::INTERFACE:
+            return ParseInterfaceDeclaration();
+        case Token::CONST:
+            return ParseConstDeclaration();
+        case Token::VAR:
+            return ParseVarDeclaration();
+        case Token::FUNC: 
+            return ParseFunctionDeclaration();
+        default:
+            SyntaxError("unknown declaration");
+            return nullptr;
+    }
 }
 
 // packageDeclaration
 //    : 'package' IDENTIFIER 
 ast::Decl* Parser::ParsePackageDeclaration() { 
-    auto location = lexer_.Next().location_;
+    auto location = lexer_.GetLocation();
     Token token; 
 
     if (!lexer_.Match(Token::ID, &token)) {
@@ -85,7 +98,7 @@ ast::Decl* Parser::ParsePackageDeclaration() {
 //    : 'import' qualifiedName 
 //    ;
 ast::Decl* Parser::ParseImportDeclaration() { 
-    auto location = lexer_.Next().location_; // skip 'package' token
+    auto location = lexer_.GetLocation(); 
 
     QualifiedName* qualifiedName = (QualifiedName*)ParseQualifiedName();
     if (!qualifiedName) {
@@ -102,7 +115,7 @@ ast::Decl* Parser::ParseImportDeclaration() {
 ast::Decl* Parser::ParseUsingDeclaration() { 
     ast::QualifiedName* qualifiedName;
     Token token;
-    auto location = lexer_.Next().location_; // skip 'using' token
+    auto location = lexer_.GetLocation();
 
     if (qualifiedName = (ast::QualifiedName*)ParseQualifiedName(); !qualifiedName)  {
         SyntaxError("formal qualifed named unexpected");
