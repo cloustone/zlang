@@ -2,51 +2,6 @@
 
 namespace zl {
 
-enum {
-    ROOT = 0,
-    PACKAGE,
-    IMPORT,
-    USING,
-    VAR_BLOCK,
-    VAR,
-    ID,
-    EXPR,
-    CONST_EXPR,
-    CONST,
-    CONST_BLOCK,
-    FUNC,
-    FUNC_PARAM,
-    FUNC_BLOCK,
-    FUNC_RET_PARAM,
-    MAX,
-};
-#define MAX_FOLLOWS 20
-const int FollowSets[][MAX_FOLLOWS] = {
-    // ROOT,
-    // PACKAGE,
-    {Token::IMPORT, Token::USING, Token::PACKAGE, Token::CLASS, Token::INTERFACE, Token::FUNCTION,},
-    // IMPORT,
-    {Token::IMPORT, Token::USING, Token::PACKAGE, Token::CLASS, Token::INTERFACE, Token::FUNCTION,},
-    // USING,
-    {Token::IMPORT, Token::USING, Token::PACKAGE, Token::CLASS, Token::INTERFACE, Token::FUNCTION,},
-    // VAR_BLOCK,
-    {Token::IMPORT, Token::USING, Token::PACKAGE, Token::CLASS, Token::INTERFACE, Token::FUNCTION,},
-    // VAR,
-    {Token::IMPORT, Token::USING, Token::PACKAGE, Token::CLASS, Token::INTERFACE, Token::FUNCTION,},
-    // ID,
-    {Token::IMPORT, Token::USING, Token::PACKAGE, Token::CLASS, Token::INTERFACE, Token::FUNCTION,},
-    // EXPR,
-    {Token::IMPORT, Token::USING, Token::PACKAGE, Token::CLASS, Token::INTERFACE, Token::FUNCTION,},
-    // CONST_EXPR,
-    {Token::IMPORT, Token::USING, Token::PACKAGE, Token::CLASS, Token::INTERFACE, Token::FUNCTION,},
-    // CONST,
-    {Token::IMPORT, Token::USING, Token::PACKAGE, Token::CLASS, Token::INTERFACE, Token::FUNCTION,},
-    // CONST_BLOCK,
-    {Token::IMPORT, Token::USING, Token::PACKAGE, Token::CLASS, Token::INTERFACE, Token::FUNCTION,},
-    // MAX,
-    {}
-};
-
 void  Parser::Build(std::vector<Node*>& decls) {
     ParseCompilationUnit(decls);
 }
@@ -56,24 +11,12 @@ void Parser::SyntaxErrorAt(const Token& token, const std::string& msg) {}
 void Parser::SyntaxErrorAt(const Location& location, const std::string& msg) {}
 void Parser::SyntaxError(const std::string& msg) {}
 
-// The function will advance token until one of followset found
-// The followset is the list of valid tokens that can follow a production,
-// if it is empty, exactly one (non-EOF) token is consumed to ensure progress.
-void Parser::Advance(int nonterminal) { 
-    if (nonterminal < (int)MAX) {
-        auto follows = FollowSets[(int)nonterminal];
-        while (!lexer_.Eof()) {
-            // Peek a token and check wethere the token is in followset
-            Token token = lexer_.Peek();
-            for (int index = 0; index < MAX_FOLLOWS; index++) {
-                if (follows[index] == token.type_)
-                    return;
-            }
-            lexer_.Next();
-        }
-    }
+// SyncStmt advances to the next statement, Used for synchronization after an error.
+void Parser::SyncStmt() {
 }
-
+// SyncDecl advances to the next declaration. Used for synchronization after an error.
+void Parser::SyncDecl() {
+}
 
 // ParseCompilationUnit will iterate all tokens to match declarations
 // compilationUnit
@@ -132,7 +75,7 @@ ast::Decl* Parser::ParsePackageDeclaration() {
 
     if (!lexer_.Match(Token::ID, &token)) {
         SyntaxError("unknown package name");
-        Advance(PACKAGE);
+        SyncDecl();
         return nullptr;
     }
     return new ast::PackageDecl(location, new ast::Identifier(token));
@@ -147,7 +90,7 @@ ast::Decl* Parser::ParseImportDeclaration() {
     QualifiedName* qualifiedName = (QualifiedName*)ParseQualifiedName();
     if (!qualifiedName) {
         SyntaxError("formal qualified name expected");
-        Advance(IMPORT);
+        SyncDecl();
         return nullptr; 
     }
     return new ast::ImportDecl(location, qualifiedName);
@@ -176,7 +119,7 @@ ast::Decl* Parser::ParseUsingDeclaration() {
     return new ast::UsingDecl(location, qualifiedName, new ast::Identifier(token));
 
 failed:
-    Advance(USING);
+    SyncDecl();
     if (qualifiedName)
         delete qualifiedName;
     return nullptr;

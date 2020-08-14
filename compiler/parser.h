@@ -7,6 +7,7 @@
 #include "error_handler.h"
 #include "program_handler.h"
 #include "ast.h"
+#include "scope.h"
 
 namespace zl {
 using namespace ast;
@@ -24,6 +25,11 @@ private:
     void SyntaxErrorAt(const Location& location, const std::string& msg);
     void SyntaxError(const std::string& msg);
 
+    // SyncStmt advances to the next statement, Used for synchronization after an error.
+    void SyncStmt();
+    // SyncDecl advances to the next declaration. Used for synchronization after an error.
+    void SyncDecl(); 
+    //
     // The function will advance token until one of followset found
     // The followset is the list of valid tokens that can follow a production,
     // if it is empty, exactly one (non-EOF) token is consumed to ensure progress.
@@ -191,10 +197,31 @@ private:
     // Expr
     Node* ParseExpr() { return nullptr; }
     Node* ParseConstExpr() { return nullptr; }
+    
+    // Scoping support
+    void OpenScope();
+    void CloseScope();
+    void OpenLabelScope();
+    void CloseLabelScope();
+    void Declare();
+    // If x is an identifier, tryResolve attempts to resolve x by looking up
+    // the object it denotes. If no object is found and collectUnresolved is
+    // set, x is marked as unresolved and collected in the list of unresolved
+    // identifiers.
+    //
+    void TryResolve(ast::Identifier* id, bool collectedUnresolved = true);
+    void Resolve(ast::Identifier* id, bool collectedUnresolved = true);
 private:
     Lexer& lexer_;
     ProgramHandler& programHandler_;
     ErrorHandler& errorHandler_;
+    int syncPos_;
+    int syncCount_;
+    ast::Scope* pkgScope_;
+    ast::Scope* topScope_;
+    ast::Scope* labelScope_;
+    std::vector<ast::Identifier*> unresolved_;
+    std::vector<ast::ImportDecl*> imports_;
 };
 
 

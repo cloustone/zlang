@@ -20,12 +20,6 @@ struct {
     { "import",     Token::IMPORT },
     { "class",      Token::CLASS },
     { "interface",  Token::INTERFACE },
-    { "extends",    Token::EXTENDS },
-    { "final",      Token::FINAL},
-    { "implements", Token::IMPLEMENTS },
-    { "var",        Token::VAR },
-    { "if",         Token::IF },
-    { "while",      Token::WHILE },
 };
 static std::map<std::string, int> keywordMaps_;
 
@@ -128,7 +122,7 @@ Token Lexer::ParseDigitalLiteral(char ch) {
             atom += ch;
         else{
             PutbackChar();
-            return Token(atom, Token::DIGITAL, lineno_++);
+            return Token(atom, Token::INT, lineno_++);
         }
     }
     return Token();
@@ -187,7 +181,7 @@ Token Lexer::NextToken(bool mark) {
             case '~':
             case '`':
                 UpdateMark();
-                return Token(ch, Token::OP, lineno_);
+                //return Token(ch, Token::OP, lineno_);
             case '\r':
                 continue;
                 break;
@@ -207,7 +201,7 @@ Token Lexer::NextToken(bool mark) {
                     return ParseDigitalLiteral(ch);
                 if (isalpha(ch))
                     return ParseAlphaToken(ch);
-                return Token(GetAtomString(ch), Token::UNKNOWN, lineno_++);
+                return Token(GetAtomString(ch), Token::ILLEGAL, lineno_++);
                 break;
         }
     }
