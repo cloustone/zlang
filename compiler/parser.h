@@ -153,7 +153,7 @@ private:
     //    | classType ('[' ']')*
     //    | mapType
     //    ;
-    Node* ParseTypeDeclaration();
+    ast::Type* ParseType();
 
     // typeList
     //    : type (',' type)*
@@ -190,7 +190,7 @@ private:
     Node* ParsePrimitiveType();
 
    
-    Node* ParseVariableInitializer();
+    ast::VarInitializer* ParseVariableInitializer();
 
     
     // classDeclaration

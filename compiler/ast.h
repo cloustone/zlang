@@ -189,11 +189,22 @@ public:
 class VarInitializer;
 class Expr;
 
+class VarInitializer : public Node {
+public:
+    VarInitializer() = delete;
+    explicit VarInitializer(const Location& location, Expr* expr)
+        :Node(location), expr_(expr) {}
+    ~VarInitializer() { 
+        if (expr_) delete expr_; 
+    }
+    Expr* expr_;
+};
+
 class VariableDecl : public Decl {
 public:
     VariableDecl() = delete;
     explicit VariableDecl(const Location& location, Identifier* name, Type* type, 
-            Expr* varInitializer)
+            VarInitializer* varInitializer)
         :Decl(location), name_(name), type_(type), varInitializer_(varInitializer) {}
     ~VariableDecl() { 
         if (name_) delete name_; 
@@ -202,7 +213,7 @@ public:
     }
     Identifier* name_;
     Type* type_;
-    Expr* varInitializer_;
+    VarInitializer* varInitializer_;
 };
 
 class VariableBlockDecl: public Decl {

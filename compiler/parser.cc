@@ -56,7 +56,7 @@ void Parser::SyncDecl() {
 void Parser::ParseCompilationUnit(std::vector<Node*>& decls) { 
     while (!lexer_.Eof()) {
         Token token;
-        if (lexer_.Match(Token::PRIVATE) || lexer_.Match(Token::PUBLIC))  {
+        if (Match(Token::PRIVATE) || Match(Token::PUBLIC))  {
             token = lexer_.Next();
         }
         if (ast::Decl* decl = ParseDeclaration(token); decl)
@@ -179,6 +179,7 @@ ast::Decl* Parser::ParseVarBlockDeclaration() {
         auto varDecl = ParseSingleVarDeclaration();
         decls.push_back(varDecl);
     }
+    Expect(Token::RPAREN);
     return new ast::VariableBlockDecl(location, decls);
 }
 
@@ -186,31 +187,12 @@ ast::Decl* Parser::ParseVarBlockDeclaration() {
 //    : IDENTIFIER ':' IDENTIFIER ('=' expression)?
 //    ;
 ast::VariableDecl* Parser::ParseSingleVarDeclaration() {
-/*
-    auto location = lexer_.Next().location_; 
-    Token varNameToken;
-
-    if (!lexer_.Match(Token::ID, &varNameToken)) {
-        SyntaxError("variable ename unexpected");
-        Advance(VAR);
-        return nullptr;
-    }
-    if (!lexer_.Match(Token::ASSIGN)) {
-        SyntaxError("variable declaration miss '=' symbol");
-        Advance(VAR);
-        return nullptr;
-    }
-    
-    Node* initializationExpr = ParseExpr();
-    if (!initializationExpr) {
-        Advance(VAR);
-        return nullptr;
-    }
-    return new Node(VAR, location,
-            new Node(ID, varNameToken),
-            new Node(EXPR, location, initializationExpr));
-*/
-    return nullptr;
+    auto location = location_;
+    auto identifier = ParseIdentifier();
+    Match(Token::ASSIGN);
+    auto type = ParseType();
+    auto expr = ParseVariableInitializer();
+    return new ast::VariableDecl(location, identifier, type, expr);
 }
 
 
@@ -365,7 +347,7 @@ ast::QualifiedName* Parser::ParseQualifiedName() {
 //    | classType ('[' ']')*
 //    | mapType
 //    ;
-Node* Parser::ParseTypeDeclaration() {
+ast::Type* Parser::ParseType() {
     return nullptr;
 }
 
@@ -424,7 +406,7 @@ Decl* Parser::ParseMemberDeclaration(){ return nullptr; }
 
 Decl* Parser::ParseMethodDeclaration(){ return nullptr; }
 
-Node* Parser::ParseVariableInitializer(){ return nullptr; }
+VarInitializer* Parser::ParseVariableInitializer(){ return nullptr; }
 
 Node* Parser::ParseArrayInitializer(){ return nullptr; }
 
