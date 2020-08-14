@@ -18,12 +18,25 @@ public:
         lexer_(lexer), programHandler_(programHandler), errorHandler_(errorHandler) {}
     ~Parser() {}
     void Build(std::vector<Node*>& decls);
+
 private:
     Parser() = delete;
+
+    // The function check wether the next token is matched with specified
+    // token, report errors if not matched
+    Location Expect(Token::TokenType token);
+
+    // The function advance next token and update token variable
+    void Next();
+    // The function lookheader to check wether next token match specified token
+    bool Match(Token::TokenType type);
+
     // The function just output systax error messge to ErrorHandler
     void SyntaxErrorAt(const Token& token, const std::string& msg);
     void SyntaxErrorAt(const Location& location, const std::string& msg);
     void SyntaxError(const std::string& msg);
+    void ErrorExpected(const Location& location, const std::string& msg);
+
     // The function will advance token until one of followset found
     // The followset is the list of valid tokens that can follow a production,
     // if it is empty, exactly one (non-EOF) token is consumed to ensure progress.
@@ -79,7 +92,7 @@ private:
     // singleVarDeclaration:
     //    : IDENTIFIER ':" type ('=' variableInitializer)?
     //    ;
-    ast::Decl* ParseSingleVarDeclaration();
+    ast::VariableDecl* ParseSingleVarDeclaration();
 
     // constDeclaraton
     //    : 'const' constBlockDeclaration | singleConstDeclaration
@@ -109,7 +122,7 @@ private:
     // qualifiedNameList
     //    : qualifiedName (',' qualifiedName)*
     //    ;
-    Node* ParseQualifiedNameList();
+    ast::QualifiedName* ParseQualifiedNameList();
 
     // formalParameterList
     // : formalParameter (',' formalParameter)*
@@ -133,7 +146,7 @@ private:
     // qualifiedName
     //    : IDENTIFIER ('.' IDENTIFIER)*
     //    ;
-    Node* ParseQualifiedName();
+    ast::QualifiedName* ParseQualifiedName();
 
     // type
     //    : primitiveType ('[' ']')*
@@ -197,6 +210,9 @@ private:
     // Expr
     Node* ParseExpr() { return nullptr; }
     Node* ParseConstExpr() { return nullptr; }
+
+    // Identifier
+    ast::Identifier* ParseIdentifier() { return nullptr; }
     
     // Scoping support
     void OpenScope();
@@ -222,6 +238,12 @@ private:
     ast::Scope* labelScope_;
     std::vector<ast::Identifier*> unresolved_;
     std::vector<ast::ImportDecl*> imports_;
+
+    // Next token look ahead
+    Token token_;
+    std::string literal_;
+    Location location_;
+    bool trace_;
 };
 
 

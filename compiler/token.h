@@ -137,4 +137,8 @@ public:
     }
 };
 
+inline std::string TokenTypeString(Token::TokenType type) {
+    return "" ;// now
+}
+
 } // namespace zl
