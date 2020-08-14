@@ -1,12 +1,14 @@
 #pragma once
-#include "location.h"
 #include <string>
 #include <vector>
 #include <map>
+#include "token.h"
+#include "location.h"
 
 namespace zl {
 namespace ast {
 
+class Node;
 class Visitor {
 public:
     virtual void Visit(const Node* node);
@@ -14,94 +16,115 @@ public:
 
 class Node {
 public:
-    virtual const Location Pos(); // The first location of the node
-    virtual const Location End(); // The last location of the node
+    Node(const Location& location): location_(location) {}
+    virtual ~Node() {}
+    // The first location of the node
+    virtual Location Pos() {  return location_; }
+    // The last location of the node
+    virtual Location End() { return Location(); }
     virtual void Visit(Visitor& v) { v.Visit(this); }
+protected:
+    Location location_;
 };
 
-class Decl : public Node { };
-class Stmt : public Node { };
-class Expr : public Node { };
+class Decl : public Node { 
+public:
+    Decl(const Location& location): Node(location) { publicity_ = true; }
+    void SetPublic(bool publicity) { publicity_ = publicity; }
+    bool IsPublic(void) { return publicity_ == true; }
+protected:
+    bool publicity_;
+};
+
+class Stmt : public Node { 
+public:
+    Stmt(const Location& location): Node(location) {}
+    virtual ~Stmt() {}
+};
+
+class Expr : public Node {
+public:
+    Expr(const Location& location): Node(location) {}
+    virtual ~Expr() {}
+};
 
 // Common declaration 
+class Identifier : public Node {
+public:
+    Identifier() = delete;
+    explicit Identifier(const Token& token):Node(token.location_), name_(token.assic_) {}
+    explicit Identifier(const Location& location, const std::string& name)
+        :Node(location), name_(name) {}
+    virtual ~Identifier() {}
+    std::string name_;
+};
+
+
 class QualifiedName : public Node {
 public:
     QualifiedName() = delete;
     explicit QualifiedName(const Location& location, std::vector<std::string>& names);
-    ~QualifiedName();
-    const Location Pos(); 
-    const Location End(); 
+    virtual ~QualifiedName();
     std::vector<std::string> names_;
 };
 
 class QualifiedNameList : public Node {
 public:
     QualifiedNameList() = delete;
-    explicit QualifiedNameList(const Location& location, std::vector<QualifiedName>& nameList)
-        :location_(location), names_(nameList) {}
+    explicit QualifiedNameList(const Location& location, std::vector<QualifiedName*>& nameList)
+        :Node(location), names_(nameList) {}
     ~QualifiedNameList() {
-        for (auto qualifiedName : names_)
-            delete qualifiedName;
+        for (auto qualifiedName : names_) delete qualifiedName;
     }
-    const Location Pos(); 
-    const Location End(); 
     std::vector<QualifiedName*> names_;
 };
 
 class Comment : public Node {
 public:
     Comment() = delete;
-    explicit Comment(const Location& location, const std::string& text): location_(location), text_(text) {}
+    explicit Comment(const Location& location, const std::string& text): Node(location), text_(text) {}
     ~Comment() {}
-    const Location Pos(); 
-    const Location End(); 
-pubic:
-    Location location_;
     std::string text_;
 };
 
 //
 // Type 
 //
-class Type : public Node { };
+class Type : public Node { 
+public:
+    Type(const Location& location):Node(location) {}
+    virtual ~Type() {}
+};
+
 class PrimitiveType : public Type {
 public:
     PrimitiveType() = delete;
     explicit PrimitiveType(const Location& location, const std::string& name)
-        :location_(location), name_(name) {}
+        :Type(location), name_(name) {}
     ~PrimitiveType() {}
-    const Location Pos(); 
-    const Location End(); 
-    Location location_;
     std::string name_;
 };
 
 class NonPrimitiveType : public Type {
 public:
     NonPrimitiveType() = delete;
-    explicit NonPrimitiveType(const location& location, Identifier* name)
-        :location_(location), name_(name) {}
+    explicit NonPrimitiveType(const Location& location, Identifier* name)
+        :Type(location), name_(name) {}
     virtual ~NonPrimitiveType() {
         if (name_) delete name_;
     }
-    const Location Pos(); 
-    const Location End(); 
-    Location location_;
     Identifier* name_;
 };
 
 class MapType : public Type {
 public:
     MapType() = delete;
-    explicit MapType(const location& location, Type* leftType, Type* rightType)
-        :location_(location), leftType_(leftType), rightType_(rightType) {}
+    explicit MapType(const Location& location, Type* leftType, Type* rightType)
+        :Type(location), leftType_(leftType), rightType_(rightType) {}
     ~MapType() {
         if (leftType_) delete leftType_;
         if (rightType_) delete rightType_;
     }
-    const Location Pos(); 
-    const Location End(); 
-    Location location_;
     Type* leftType_;
     Type* rightType_;
 };
@@ -109,14 +132,11 @@ public:
 class ArrayType : public Type {
 public:
     ArrayType() = delete;
-    explicit ArrayType(const location& location, Type* type)
-        :location_(location), type_(type) {}
+    explicit ArrayType(const Location& location, Type* type)
+        :Type(location), type_(type) {}
     ~ArrayType() {
         if (type_) delete type_;
     }
-    const Location Pos(); 
-    const Location End(); 
-    Location location_;
     Type* type_;
 };
 
@@ -131,59 +151,51 @@ struct PackageDecl : public Decl {
 public:
     PackageDecl() = delete;
     explicit PackageDecl(const Location& location, Identifier* identifier)
-        :location_(location), identifier_(identifier) {}
+        :Decl(location), name_(identifier) {}
     ~PackageDecl() { delete name_; }
-    const Location Pos(); 
-    const Location End(); 
-    Location location_;
     Identifier* name_;
 };
 
 class ImportDecl : public Decl {
 public:
     ImportDecl() = delete;
-    explicit ImportDecl(const Location& location, Identifier* identifier, QualifiedName* path);
-    ~ImportDecl();
-    const Location Pos(); 
-    const Location End(); 
-    Location location_;
-    Identifier* name_;
-    QualifiedName* path_;
+    explicit ImportDecl(const Location& location, QualifiedName* name)
+        :Decl(location), name_(name) {}
+    virtual ~ImportDecl() {
+        if (name_) delete name_;
+    }
+    QualifiedName* name_;
 };
 
 class UsingDecl : public Decl {
 public:
     UsingDecl() = delete;
-    explicit UsingDecl(const Location& location, QualifiedNam* qualifiedName, Identifier* identifier)
-        :location_(location), qualifiedName_(qualifiedName), identifier_(identifier) {}
-    ~PackageDecl() { 
-        delete name_; 
-        delete identifier_;
+    explicit UsingDecl(const Location& location, QualifiedName* qualifiedName, Identifier* aliasName)
+        :Decl(location), qualifiedName_(qualifiedName), aliasName_(aliasName) {}
+    virtual ~UsingDecl() { 
+        delete qualifiedName_; 
+        delete aliasName_;
     }
-    const Location Pos(); 
-    const Location End(); 
-    Location location_;
     QualifiedName* qualifiedName_;
-    Identifier* identifier_;
+    Identifier* aliasName_;
 };
 
+class VarInitializer;
+class Expr;
 
 class VariableDecl : public Decl {
 public:
     VariableDecl() = delete;
-    explicit VariableDecl(const Location& location, Identifier* name, TypeDecl* typeDecl, 
+    explicit VariableDecl(const Location& location, Identifier* name, Type* type, 
             Expr* varInitializer)
-        :location_(location), name_(name), typeDecl_(typeDecl), varInitializer_(varInitializer) {}
+        :Decl(location), name_(name), type_(type), varInitializer_(varInitializer) {}
     ~VariableDecl() { 
         if (name_) delete name_; 
-        if (typeDecl_) delete typeDecl_;
+        if (type_) delete type_;
         if (varInitializer_) delete varInitializer_;
     }
-    const Location Pos(); 
-    const Location End(); 
-    Location location_;
     Identifier* name_;
-    TypeDecl* typeDecl_;
+    Type* type_;
     Expr* varInitializer_;
 };
 
@@ -191,14 +203,10 @@ class VariableBlockDecl: public Decl {
 public:
     VariableBlockDecl() = delete;
     explicit VariableBlockDecl(const Location& location, std::vector<VariableDecl*> variables)
-        :location_(location), variables_(variables) {}
+        :Decl(location), variables_(variables) {}
     ~VariableBlockDecl() {
-        for (auto p : variables_)
-            delete p;
+        for (auto p : variables_) delete p;
     }
-    const Location Pos(); 
-    const Location End(); 
-    Location location_;
     std::vector<VariableDecl*> variables_;
 };
 
@@ -208,17 +216,15 @@ public:
 class ConstDecl: public Decl {
 public:
     ConstDecl() = delete;
-    explicit ConstDecl(const Location& location, Identifier* name, TypeDecl* typeDecl, Expr* initializer)
-        :location_(location), name_(name), type_(typeDecl), initializer_(initializer_) {}
-    ~ConstBlockDecl() {
+    explicit ConstDecl(const Location& location, Identifier* name, Type* type, Expr* initializer)
+        :Decl(location), name_(name), type_(type), initializer_(initializer) {}
+    virtual ~ConstDecl() {
         if (name_) delete name_;
-        if (typeDecl_) delete typeDecl_;
+        if (type_) delete type_;
         if (initializer_) delete initializer_;
     }
-    const Location Pos(); 
-    const Location End(); 
-    Location location_;
-    TypeDecl* type_;
+    Identifier* name_;
+    Type* type_;
     Expr* initializer_;
 };
 
@@ -229,14 +235,10 @@ class ConstBlockDecl: public Decl {
 public:
     ConstBlockDecl() = delete;
     explicit ConstBlockDecl(const Location& location, std::vector<ConstDecl*> fields)
-        :location_(location), fields(fields) {}
+        :Decl(location), fields_(fields) {}
     ~ConstBlockDecl() {
-        for (auto field : fields_)
-            delete field;
+        for (auto field : fields_) delete field;
     }
-    const Location Pos(); 
-    const Location End(); 
-    Location location_;
     std::vector<ConstDecl*> fields_;
 };
 
@@ -252,21 +254,47 @@ public:
     FunctionDecl() = delete;
     explicit FunctionDecl(const Location& location, FormalParameterList* formalParameterList,
             ReturnParameterList* returnParameterList, FunctionBodyDecl* functionBodyDecl)
-        :location_(location), formalParameterList_(formalParameterList),
+        :Decl(location), formalParameterList_(formalParameterList),
         returnParameterList_(returnParameterList), functionBodyDecl_(functionBodyDecl) {}
 
-    ~FunctionDecl() {
+    virtual ~FunctionDecl() {
         if (formalParameterList_) delete formalParameterList_;
         if (returnParameterList_) delete returnParameterList_;
         if (functionBodyDecl_) delete functionBodyDecl_;
     }
-    const Location Pos(); 
-    const Location End(); 
-    Location location_;
     FormalParameterList* formalParameterList_;
     ReturnParameterList* returnParameterList_;
     FunctionBodyDecl* functionBodyDecl_;
 };
+
+class FunctionBodyDecl: public Decl {
+public:
+    FunctionBodyDecl() = delete;
+    explicit FunctionBodyDecl(const Location& location, Decl* block)
+        :Decl(location), block_(block) {}
+    virtual ~FunctionBodyDecl() {
+        if (block_) delete block_;
+    }
+    Decl* block_;
+};
+
+
+// formalParameter
+// : IDENTIFIER ':' type
+// ;
+class FormalParameter : public Decl {
+public:
+    FormalParameter() = delete;
+    explicit FormalParameter(const Location& location, Identifier* name, Type* type)
+        :Decl(location), name_(name), type_(type) {}
+    virtual ~FormalParameter() {
+        if (name_) delete name_;
+        if (type_) delete type_;
+    }
+    Identifier* name_;
+    Type* type_;
+};
+
 
 // formalParameters
 //    : '(' formalParameterList ? ')'
@@ -278,37 +306,12 @@ class FormalParameterList : public Decl {
 public:
     FormalParameterList() = delete;
     explicit FormalParameterList(const Location& location, const std::vector<FormalParameter*>& params)
-        :location(location_), formalParameters_(params) {}
-    ~FormalParameterList() {
-        for (p : formalParameters_) delete p;
+        :Decl(location), formalParameters_(params) {}
+    virtual ~FormalParameterList() {
+        for (auto p : formalParameters_) delete p;
     }
-    const Location Pos(); 
-    const Location End(); 
-    Location location_;
     std::vector<FormalParameter*> formalParameters_;
 };
-
-// formalParameter
-// : IDENTIFIER ':' type
-// ;
-class FormalParameter : public Decl {
-public:
-    FormalParameter() = delete;
-    explicit FormalParameter(const Location& location, Identifier* name, TypeDecl* typeDecl)
-        :location_(location), name_(name), type_(typeDecl) {}
-    ~FormalParameter() {
-        if (name_) delete name_;
-        if (type_) delete type_;
-    }
-    const Location Pos(); 
-    const Location End(); 
-    Location location_;
-    Identifier* name_;
-    TypeDecl* type_;
-};
-
-
-
 
 
 

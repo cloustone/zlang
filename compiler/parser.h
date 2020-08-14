@@ -6,16 +6,17 @@
 #include "lexer.h"
 #include "error_handler.h"
 #include "program_handler.h"
-#include "parser_node.h"
+#include "ast.h"
 
 namespace zl {
+using namespace ast;
 
 class Parser {
 public:
     explicit Parser(Lexer& lexer, ProgramHandler& programHandler, ErrorHandler& errorHandler):
         lexer_(lexer), programHandler_(programHandler), errorHandler_(errorHandler) {}
     ~Parser() {}
-    Node* Build();
+    void Build(std::vector<Node*>& decls);
 private:
     Parser() = delete;
     // The function just output systax error messge to ErrorHandler
@@ -26,12 +27,12 @@ private:
     // The function will advance token until one of followset found
     // The followset is the list of valid tokens that can follow a production,
     // if it is empty, exactly one (non-EOF) token is consumed to ensure progress.
-    void Advance(Node::Type nonterminal);
+    void Advance(int nonterminal);
 
     // compilationUnit
     //    : scopeModifier? declaration* EOF
     //    ;
-    Node* ParseCompilationUnit();
+    void ParseCompilationUnit(std::vector<Node*>& decls);
 
     // declaration
     //    : packageDeclaration 
@@ -43,56 +44,56 @@ private:
     //    | classDeclaration
     //    | interfaceDeclaration
     //    ;
-    Node* ParseDeclaration();
+    ast::Decl* ParseDeclaration();
     
     // packageDeclaration
     //    : 'package' qualifiedName  
-    Node* ParsePackageDeclaration();
+    ast::Decl* ParsePackageDeclaration();
 
     // importDeclaration
     //   : 'import' qualifiedName 
     //    ;
-    Node* ParseImportDeclaration();
+    ast::Decl* ParseImportDeclaration();
 
     // usingDeclaration
     //    : 'using' qualifiedName '=' IDENTIFIER
     //    ;
-    Node* ParseUsingDeclaration();
+    ast::Decl* ParseUsingDeclaration();
 
     // varDeclaration
     //        : 'var' varBlockDeclaration | singleVarDeclaration
     //        ;
-    Node* ParseVarDeclaration();
+    ast::Decl* ParseVarDeclaration();
 
     // varBlockDeclaration
     //    : '(' singleVarDeclaration* ')'
     //    ;
-    Node* ParseVarBlockDeclaration();
+    ast::Decl* ParseVarBlockDeclaration();
 
     // singleVarDeclaration:
     //    : IDENTIFIER ':" type ('=' variableInitializer)?
     //    ;
-    Node* ParseSingleVarDeclaration();
+    ast::Decl* ParseSingleVarDeclaration();
 
     // constDeclaraton
     //    : 'const' constBlockDeclaration | singleConstDeclaration
     //    ;
-    Node* ParseConstDeclaration();
+    ast::Decl* ParseConstDeclaration();
 
     // constBlockDeclaration
     //    : '(' singleConstDeclaration* ')'
     //    ;
-    Node* ParseConstBlockDeclaration();
+    ast::Decl* ParseConstBlockDeclaration();
 
     // singleConstDeclaration
     //    : IDENTIFIER (':' IDENTIFIER)? ('=' constExpression)?
     //    ;
-    Node* ParseSingleConstDeclaration();
+    ast::Decl* ParseSingleConstDeclaration();
 
     // functionDeclaration
     //    : 'func' IDENTIFIER formalParameters (':' functionReturnParameters)?  functionBodyDeclaration
     //    ;
-    Node* ParseFunctionDeclaration();
+    ast::Decl* ParseFunctionDeclaration();
 
     // formalParameters
     //    : '(' formalParameterList ? ')'
@@ -178,12 +179,12 @@ private:
     //      ('implements' qualifiedNameList)? 
     //     '{' classBodyDeclaration* '}'
     //    ;
-    Node* ParseClassDeclaration();
-    Node* ParseInterfaceDeclaration();
+    ast::Decl* ParseClassDeclaration();
+    ast::Decl* ParseInterfaceDeclaration();
 
-    Node* ParseClassBodyDeclaration();
-    Node* ParseMemberDeclaration();
-    Node* ParseMethodDeclaration();
+    ast::Decl* ParseClassBodyDeclaration();
+    ast::Decl* ParseMemberDeclaration();
+    ast::Decl* ParseMethodDeclaration();
     Node* ParseArrayInitializer();
     Node* ParseMapInitializer();
 

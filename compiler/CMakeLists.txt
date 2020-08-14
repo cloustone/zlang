@@ -20,6 +20,9 @@ set(CMAKE_ALLOW_LOOSE_LOOP_CONSTRUCTS TRUE)
 
 add_definitions(-Wall)
 add_definitions(-Wno-unused-private-field)
+add_definitions(-Wno-unused-private-field)
+add_definitions(-Wno-delete-incomplete) # Temp
+add_definitions(-Wno-delete-non-abstract-non-virtual-dtor) #temp
 # project version
 set(${PROJECT_NAME}_PATCH_LEVEL 0)
 set(TARGET_NAME zlc)

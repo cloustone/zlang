@@ -2,6 +2,24 @@
 
 namespace zl {
 
+enum {
+    ROOT = 0,
+    PACKAGE,
+    IMPORT,
+    USING,
+    VAR_BLOCK,
+    VAR,
+    ID,
+    EXPR,
+    CONST_EXPR,
+    CONST,
+    CONST_BLOCK,
+    FUNC,
+    FUNC_PARAM,
+    FUNC_BLOCK,
+    FUNC_RET_PARAM,
+    MAX,
+};
 #define MAX_FOLLOWS 20
 const int FollowSets[][MAX_FOLLOWS] = {
     // ROOT,
@@ -29,8 +47,8 @@ const int FollowSets[][MAX_FOLLOWS] = {
     {}
 };
 
-Node* Parser::Build() {
-    return ParseCompilationUnit();
+void  Parser::Build(std::vector<Node*>& decls) {
+    ParseCompilationUnit(decls);
 }
 
 // The function just output systax error messge to ErrorHandler
@@ -41,8 +59,8 @@ void Parser::SyntaxError(const std::string& msg) {}
 // The function will advance token until one of followset found
 // The followset is the list of valid tokens that can follow a production,
 // if it is empty, exactly one (non-EOF) token is consumed to ensure progress.
-void Parser::Advance(Node::Type nonterminal) { 
-    if (nonterminal < Node::Type::MAX) {
+void Parser::Advance(int nonterminal) { 
+    if (nonterminal < (int)MAX) {
         auto follows = FollowSets[(int)nonterminal];
         while (!lexer_.Eof()) {
             // Peek a token and check wethere the token is in followset
@@ -61,23 +79,21 @@ void Parser::Advance(Node::Type nonterminal) {
 // compilationUnit
 //    : scopeModifier? declaration* EOF
 //    ;
-Node* Parser::ParseCompilationUnit() { 
-    Node* root = new Node(Location());
-
+void Parser::ParseCompilationUnit(std::vector<Node*>& decls) { 
     while (!lexer_.Eof()) {
         bool publicity = true;
         if (lexer_.Match(Token::PRIVATE) || lexer_.Match(Token::PUBLIC))  {
             publicity = lexer_.Match(Token::PUBLIC);
             lexer_.Next();
         }
-        Node* node= ParseDeclaration();
-        if (node) {
-            root->Add(node);
-            node->SetPublic(publicity);
+        ast::Decl* decl= ParseDeclaration();
+        if (decl) {
+            decl->SetPublic(publicity);
+            decls.push_back(decl);
         }
     }
-    return root; 
 }
+
 // Declaration nonterminal parser function 
 // declaration
 //    : packageDeclaration 
@@ -89,7 +105,7 @@ Node* Parser::ParseCompilationUnit() {
 //    | classDeclaration
 //    | interfaceDeclaration
 //    ;
-Node* Parser::ParseDeclaration() { 
+ast::Decl* Parser::ParseDeclaration() { 
     if (lexer_.Match(Token::PACKAGE))
         return ParsePackageDeclaration();
     else if (lexer_.Match(Token::IMPORT))
@@ -109,41 +125,43 @@ Node* Parser::ParseDeclaration() {
 }
 
 // packageDeclaration
-//    : 'package' qualifiedName  
-Node* Parser::ParsePackageDeclaration() { 
+//    : 'package' IDENTIFIER 
+ast::Decl* Parser::ParsePackageDeclaration() { 
     auto location = lexer_.Next().location_;
+    Token token; 
 
-    if (Node* child = ParseQualifiedName(); child) 
-        return new Node(Node::Type::PACKAGE, location, child);
-
-    SyntaxErrorAt(location, "formal qualified name expected");
-    Advance(Node::Type::PACKAGE);
-    return nullptr; 
+    if (!lexer_.Match(Token::ID, &token)) {
+        SyntaxError("unknown package name");
+        Advance(PACKAGE);
+        return nullptr;
+    }
+    return new ast::PackageDecl(location, new ast::Identifier(token));
 }
 
 // importDeclaration
 //    : 'import' qualifiedName 
 //    ;
-Node* Parser::ParseImportDeclaration() { 
+ast::Decl* Parser::ParseImportDeclaration() { 
     auto location = lexer_.Next().location_; // skip 'package' token
 
-    if (Node* child = ParseQualifiedName(); child) 
-        return new Node(Node::Type::IMPORT, location, child);
-
-    SyntaxErrorAt(location, "formal qualified name expected");
-    Advance(Node::Type::IMPORT);
-    return nullptr; 
+    QualifiedName* qualifiedName = (QualifiedName*)ParseQualifiedName();
+    if (!qualifiedName) {
+        SyntaxError("formal qualified name expected");
+        Advance(IMPORT);
+        return nullptr; 
+    }
+    return new ast::ImportDecl(location, qualifiedName);
 }
 
 // usingDeclaration
 //    : 'using' qualifiedName '=' IDENTIFIER
 //    ;
-Node* Parser::ParseUsingDeclaration() { 
+ast::Decl* Parser::ParseUsingDeclaration() { 
+    ast::QualifiedName* qualifiedName;
+    Token token;
     auto location = lexer_.Next().location_; // skip 'using' token
-    Node* qualifiedName;
-    Token identifier;
 
-    if (qualifiedName = ParseQualifiedName(); !qualifiedName)  {
+    if (qualifiedName = (ast::QualifiedName*)ParseQualifiedName(); !qualifiedName)  {
         SyntaxError("formal qualifed named unexpected");
         goto failed;
     }
@@ -151,14 +169,14 @@ Node* Parser::ParseUsingDeclaration() {
         SyntaxError("missing '=' in using statement");
         goto failed;
     }
-    if (!lexer_.Match(Token::ID, &identifier)) {
+    if (!lexer_.Match(Token::ID, &token)) {
         SyntaxError("missing target name in using statement");
         goto failed;
     }
-    return new Node(Node::Type::USING, location, qualifiedName);
+    return new ast::UsingDecl(location, qualifiedName, new ast::Identifier(token));
 
 failed:
-    Advance(Node::Type::USING);
+    Advance(USING);
     if (qualifiedName)
         delete qualifiedName;
     return nullptr;
@@ -168,17 +186,17 @@ failed:
 // varDeclaration
 //        : 'var' varBlockDeclaration | singleVarDeclaration
 //        ;
-Node* Parser::ParseVarDeclaration() {
+ast::Decl* Parser::ParseVarDeclaration() {
     if (lexer_.Match('('))
         return ParseVarBlockDeclaration(); 
     else
         return ParseSingleVarDeclaration();
 }
-
 // varBlockDeclaration
 //    : '(' singleVarDeclaration* ')'
 //    ;
-Node* Parser::ParseVarBlockDeclaration() {
+ast::Decl* Parser::ParseVarBlockDeclaration() {
+/*
     auto location = lexer_.Next().location_; // skip '(' token
     std::vector<Node*> nodes;
 
@@ -188,45 +206,51 @@ Node* Parser::ParseVarBlockDeclaration() {
         else {
             SyntaxError("illegal variable declaration");
             for (auto node : nodes) delete node;
-            Advance(Node::Type::VAR_BLOCK);
+            Advance(VAR_BLOCK);
             return nullptr;
         }
     }
-    return  new Node(Node::Type::VAR_BLOCK, location, nodes);
+    return  new Node(VAR_BLOCK, location, nodes);
+*/
+    return nullptr;
 }
 
 // singleSingleVarDeclaration:
 //    : IDENTIFIER ':' IDENTIFIER ('=' expression)?
 //    ;
-Node* Parser::ParseSingleVarDeclaration() {
+ast::Decl* Parser::ParseSingleVarDeclaration() {
+/*
     auto location = lexer_.Next().location_; 
     Token varNameToken;
 
     if (!lexer_.Match(Token::ID, &varNameToken)) {
         SyntaxError("variable ename unexpected");
-        Advance(Node::Type::VAR);
+        Advance(VAR);
         return nullptr;
     }
     if (!lexer_.Match(Token::ASSIGN)) {
         SyntaxError("variable declaration miss '=' symbol");
-        Advance(Node::Type::VAR);
+        Advance(VAR);
         return nullptr;
     }
     
     Node* initializationExpr = ParseExpr();
     if (!initializationExpr) {
-        Advance(Node::Type::VAR);
+        Advance(VAR);
         return nullptr;
     }
-    return new Node(Node::Type::VAR, location,
-            new Node(Node::Type::ID, varNameToken),
-            new Node(Node::Type::EXPR, location, initializationExpr));
+    return new Node(VAR, location,
+            new Node(ID, varNameToken),
+            new Node(EXPR, location, initializationExpr));
+*/
+    return nullptr;
 }
+
 
 // constDeclaraton
 //    : 'const' constBlockDeclaration | singleConstDeclaration
 //    ;
-Node* Parser::ParseConstDeclaration() {
+ast::Decl* Parser::ParseConstDeclaration() {
     lexer_.Next(); 
 
     if (lexer_.Match('('))
@@ -238,7 +262,8 @@ Node* Parser::ParseConstDeclaration() {
 // constBlockDeclaration
 //    : '(' singleConstDeclaration* ')'
 //    ;
-Node* Parser::ParseConstBlockDeclaration() {
+ast::Decl* Parser::ParseConstBlockDeclaration() {
+/*
     auto location = lexer_.Next().location_;  // skip '('
     std::vector<Node*> declarations;
 
@@ -246,33 +271,35 @@ Node* Parser::ParseConstBlockDeclaration() {
         if (Node* node = ParseSingleConstDeclaration(); node)
             declarations.push_back(node);
         else  {
-            Advance(Node::Type::CONST_BLOCK);
+            Advance(CONST_BLOCK);
             break;
         }
     }
     if (!declarations.empty()) 
-        return  new Node(Node::Type::CONST_BLOCK, location, declarations);
+        return  new Node(CONST_BLOCK, location, declarations);
     SyntaxErrorAt(location, "no valid const declaration found");
+*/
     return nullptr;
 }
 
 // singleConstDeclaration
 //    : IDENTIFIER (':' IDENTIFIER)? ('=' variablieInitialization)?
 //    ;
-Node* Parser::ParseSingleConstDeclaration() {
+ast::Decl* Parser::ParseSingleConstDeclaration() {
+    /*
     Token nameToken, typeToken;
     auto location = lexer_.GetLocation();
 
     if (!lexer_.Match(Token::ID, &nameToken)) {
         SyntaxError("expected const identifier token missed");
-        Advance(Node::Type::VAR);
+        Advance(VAR);
     }
 
     // Const identifier have a type constraint
     if (lexer_.Match(':')) {
         lexer_.Next();
          if (!lexer_.Match(Token::ID, &typeToken)) {
-            Advance(Node::Type::VAR);
+            Advance(VAR);
         }
     }
 
@@ -283,22 +310,25 @@ Node* Parser::ParseSingleConstDeclaration() {
             SyntaxError("wrong const expression found");
         }
     }
-    Node* varDeclaration = new Node(Node::Type::VAR, location, nameToken, typeToken); 
+    Node* varDeclaration = new Node(VAR, location, nameToken, typeToken); 
     varDeclaration->Add(variableInitializer);
 
     return varDeclaration;
+*/
+    return nullptr;
 }
 
 // functionDeclaration
 //    : 'func' IDENTIFIER formalParameters (':' functionReturnParameters)?  functionBodyDeclaration
 //    ;
-Node* Parser::ParseFunctionDeclaration() {
+ast::Decl* Parser::ParseFunctionDeclaration() {
+/*
     auto location = lexer_.Next().location_;  // skip 'func'
     Token funcNameToken;
 
     if (!lexer_.Match(Token::ID, &funcNameToken)) {
         SyntaxError("function name missed");
-        Advance(Node::Type::FUNC);
+        Advance(FUNC);
         // Parser continue to parser the left declaration without return
         // nullptr
     }
@@ -309,7 +339,9 @@ Node* Parser::ParseFunctionDeclaration() {
         returnParameters = ParseFunctionReturnParameters();
     }
     Node* bodyDeclaration = ParseFunctionBodyDeclaration();
-    return new Node(Node::Type::FUNC, location, formalParameters, returnParameters, bodyDeclaration);
+    return new Node(FUNC, location, formalParameters, returnParameters, bodyDeclaration);
+*/
+    return nullptr;
 }
 
 // formalParameters
@@ -416,14 +448,14 @@ Node* Parser::ParsePrimitiveType() {
 
 
 
-Node* Parser::ParseInterfaceDeclaration(){ return nullptr; }
-Node* Parser::ParseClassDeclaration(){ return nullptr; }
+Decl* Parser::ParseInterfaceDeclaration(){ return nullptr; }
+Decl* Parser::ParseClassDeclaration(){ return nullptr; }
 
-Node* Parser::ParseClassBodyDeclaration(){ return nullptr; }
+Decl* Parser::ParseClassBodyDeclaration(){ return nullptr; }
 
-Node* Parser::ParseMemberDeclaration(){ return nullptr; }
+Decl* Parser::ParseMemberDeclaration(){ return nullptr; }
 
-Node* Parser::ParseMethodDeclaration(){ return nullptr; }
+Decl* Parser::ParseMethodDeclaration(){ return nullptr; }
 
 Node* Parser::ParseVariableInitializer(){ return nullptr; }
 
