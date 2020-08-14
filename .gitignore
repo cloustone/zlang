@@ -2,6 +2,7 @@
 *.d
 build
 bin
+*.swp
 
 # Compiled Object files
 *.slo
