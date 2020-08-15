@@ -83,11 +83,19 @@ functionReturnParameters
     : ('void' | type) | ('(' typeList ')')
     ;
 
-functionBodyDeclaration
+functionBlockDeclaration
     : block
     ;
 qualifiedName
     : IDENTIFIER ('.' IDENTIFIER)*
+    ;
+
+interfaceDeclaration
+    : 'interface' '{' interfaceMethodDecl* '}'
+    ;
+
+interfaceMethodDecl
+    : IDENTIFIER formalParameters (':' (type | 'void'))? ('throw' qualifiedNameList)?
     ;
 
 // type definition
@@ -143,7 +151,7 @@ memberDeclaration
 
 methodDeclaration
     : 'func' IDENTIFIER formalParameters (':' (type | 'void'))? ('throw' qualifiedNameList)?
-     ( methodBody | ';')
+     ( methodBlock | ';')
     ;
 
 variableDeclaration

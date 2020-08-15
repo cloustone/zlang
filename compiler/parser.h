@@ -119,11 +119,6 @@ private:
     //    ;
     ast::FormalParameterList* ParseFormalParameters();
 
-    // qualifiedNameList
-    //    : qualifiedName (',' qualifiedName)*
-    //    ;
-    ast::QualifiedName* ParseQualifiedNameList();
-
     // formalParameterList
     // : formalParameter (',' formalParameter)*
     // ;
@@ -147,6 +142,17 @@ private:
     //    : IDENTIFIER ('.' IDENTIFIER)*
     //    ;
     ast::QualifiedName* ParseQualifiedName();
+
+    // interfaceMethodDecl
+    //    : IDENTIFIER formalParameters (':' (type | 'void'))? ('throw' qualifiedNameList)?
+    // 
+    ast::InterfaceMethodDecl* ParseInterfaceMethod();
+
+    // interfaceDeclaration
+    //    : 'interface' '{' interfaceMethodDecl* '}'
+    //    ;
+    ast::InterfaceDecl* ParseInterfaceDecl();
+    
 
     // type
     //    : primitiveType ('[' ']')*
@@ -210,6 +216,9 @@ private:
     // Expr
     Node* ParseExpr() { return nullptr; }
     Node* ParseConstExpr() { return nullptr; }
+
+    // Statement
+    Stmt* ParseStmt() { return nullptr; }
 
     // Identifier
     ast::Identifier* ParseIdentifier() { return nullptr; }

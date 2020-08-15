@@ -325,22 +325,70 @@ ast::ReturnParameterList* Parser::ParseFunctionReturnParameters() {
 //    : block
 //    ;
 ast::FunctionBlockDecl* Parser::ParseFunctionBlockDeclaration() {
-    return nullptr;
+    auto location = location_;
+    std::vector<ast::Node*> nodes;
+
+    Expect(Token::LBRACE);
+    while (!Match(Token::RBRACE)) {
+        Next();
+        if (token_.type_ == Token::VAR) 
+            nodes.push_back(ParseVarDeclaration());
+        else 
+            nodes.push_back(ParseStmt());
+    }
+    Expect(Token::RBRACE);
+    return new ast::FunctionBlockDecl(location);
 }
 
 // qualifiedName
 //    : IDENTIFIER ('.' IDENTIFIER)*
 //    ;
 ast::QualifiedName* Parser::ParseQualifiedName() {
-    return nullptr;
+    std::vector<std::string> names;
+    
+    auto location = Expect(Token::ID);
+    names.push_back(literal_);
+    while (Match(Token::PERIOD)) {
+        Next();
+        Expect(Token::ID);
+        names.push_back(literal_);
+    }
+    return new ast::QualifiedName(location, names);
 }
 
-// qualifiedNameList
-//    : qualifiedName (',' qualifiedName)*
-//    ;
-ast::QualifiedName* Parser::ParseQualifiedNameList() {
-    return nullptr;
+// interfaceMethodDecl
+//    : IDENTIFIER formalParameters (':' (type | 'void'))? ('throw' qualifiedNameList)?
+// 
+ast::InterfaceMethodDecl* Parser::ParseInterfaceMethod() {
+    auto location = location_;  
+    auto nameId = ParseIdentifier();
+    auto formalParameters = ParseFormalParameters();
+    ast::ReturnParameterList* returnParams = nullptr;
+
+    if (Match(Token::COLON)) {
+        Next();
+        returnParams = ParseFunctionReturnParameters();
+    }
+    return new ast::InterfaceMethodDecl(location, nameId, formalParameters, returnParams);
 }
+
+// interfaceDeclaration
+//    : 'interface' '{' interfaceMethodDecl* '}'
+//    ;
+ast::InterfaceDecl* Parser::ParseInterfaceDecl() {
+    auto location = location_;
+    auto methodName = ParseIdentifier();
+    std::vector<ast::InterfaceMethodDecl*> methods;
+
+    Expect(Token::LBRACE);
+    while (!Match(Token::RPAREN)) {
+        if (auto method  = ParseInterfaceMethod(); method)
+            methods.push_back(method);
+    }
+    Expect(Token::RBRACE);
+    return new ast::InterfaceDecl(location, methodName, methods);
+}
+
 
 
 // type

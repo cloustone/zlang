@@ -69,8 +69,9 @@ public:
 class QualifiedName : public Node {
 public:
     QualifiedName() = delete;
-    explicit QualifiedName(const Location& location, std::vector<std::string>& names);
-    virtual ~QualifiedName();
+    explicit QualifiedName(const Location& location, std::vector<std::string>& names)
+        : Node(location), names_(names) {}
+    virtual ~QualifiedName() {} 
     std::vector<std::string> names_;
 };
 
@@ -291,15 +292,16 @@ public:
     FunctionBlockDecl* functionBlockDecl_;
 };
 
-class FunctionBlockDecl: public Decl {
+class FunctionBlockDecl: public Node {
 public:
     FunctionBlockDecl() = delete;
-    explicit FunctionBlockDecl(const Location& location, Decl* block)
-        :Decl(location), block_(block) {}
+    explicit FunctionBlockDecl(const Location& location) :Node(location) {}
     virtual ~FunctionBlockDecl() {
-        if (block_) delete block_;
+        for (auto p : nodes_)
+            delete p;
     }
-    Decl* block_;
+    void Add(Node* n);
+    std::vector<Node*> nodes_;
 };
 
 
@@ -350,6 +352,48 @@ public:
     }
     std::vector<Type*> types_;
 };
+
+// interfaceMethodDecl
+//    : IDENTIFIER formalParameters (':' (type | 'void'))? ('throw' qualifiedNameList)?
+//    ;
+class InterfaceMethodDecl: public Node {
+public:
+    InterfaceMethodDecl() = delete;
+    explicit InterfaceMethodDecl(const Location& location, Identifier* id, FormalParameterList* formalParameterList,
+            ReturnParameterList* returnParameterList)
+        :Node(location), name_(id), formalParameterList_(formalParameterList),
+        returnParameterList_(returnParameterList) {}
+
+    virtual ~InterfaceMethodDecl() {
+        if (name_) delete name_;
+        if (formalParameterList_) delete formalParameterList_;
+        if (returnParameterList_) delete returnParameterList_;
+    }
+    Identifier* name_;
+    FormalParameterList* formalParameterList_;
+    ReturnParameterList* returnParameterList_;
+};
+
+
+// interfaceDeclaration
+//    : 'interface' '{' interfaceMethodDecl* '}'
+//    ;
+class InterfaceDecl : public Decl {
+public:
+    InterfaceDecl() = delete;
+    explicit InterfaceDecl(const Location& location, Identifier* name,
+            const std::vector<InterfaceMethodDecl*>& methods)
+        :Decl(location), name_(name), methods_(methods) {}
+    virtual ~InterfaceDecl() {
+        if (name_) delete name_;
+        for (auto p : methods_) delete p;
+    }
+    Identifier* name_;
+    std::vector<InterfaceMethodDecl*> methods_;
+};
+
+
+
 
 
 
