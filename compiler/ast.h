@@ -102,6 +102,12 @@ public:
     virtual ~Type() {}
 };
 
+class NullType : public Node { 
+public:
+    NullType(const Location& location):Node(location) {}
+    virtual ~NullType() {}
+};
+
 class PrimitiveType : public Type {
 public:
     PrimitiveType() = delete;
@@ -330,6 +336,25 @@ public:
     }
     std::vector<FormalParameter*> formalParameters_;
 };
+
+// functionReturnParameters
+//    : ('void' | type) | ('(' typeList ')')
+//    ;
+class ReturnParameterList : public Node {
+public:
+    ReturnParameterList() = delete;
+    explicit ReturnParameterList(const Location& location, const std::vector<Type*>& params)
+        :Node(location), types_(params) {}
+    virtual ~ReturnParameterList() {
+        for (auto p : types_) delete p;
+    }
+    std::vector<Type*> types_;
+};
+
+
+
+
+
 
 
 

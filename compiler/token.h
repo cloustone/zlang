@@ -110,6 +110,7 @@ public:
         PRIVATE,
         USING,
         FUNCTION,
+        VOID,
         KEYWORD_END,
         };
     static Token InvalidToken;

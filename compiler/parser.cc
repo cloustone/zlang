@@ -264,38 +264,64 @@ ast::FunctionDecl* Parser::ParseFunctionDeclaration() {
 //    : '(' formalParameterList ? ')'
 //    ;
 ast::FormalParameterList* Parser::ParseFormalParameters() {
-    return nullptr;
-}
-
-// qualifiedNameList
-//    : qualifiedName (',' qualifiedName)*
-//    ;
-ast::QualifiedName* Parser::ParseQualifiedNameList() {
-    return nullptr;
+    Expect(Token::LPAREN);
+    auto formalParameterList = ParseFormalParameterList();
+    Expect(Token::LPAREN);
+    return formalParameterList;
 }
 
 // formalParameterList
 // : formalParameter (',' formalParameter)*
 // ;
 ast::FormalParameterList* Parser::ParseFormalParameterList() {
-    return nullptr;
+    auto location = location_;
+    std::vector<ast::FormalParameter*> parameterList;
+    auto formalParameter = ParseFormalParameter();
+    parameterList.push_back(formalParameter);
+
+    while (Match(Token::LPAREN)) {
+        Next();
+        formalParameter = ParseFormalParameter();
+        parameterList.push_back(formalParameter);
+    }
+    return new ast::FormalParameterList(location, parameterList); 
 }
 
 // formalParameter
 // : IDENTIFIER ':' type
 // ;
 ast::FormalParameter* Parser::ParseFormalParameter() {
-    return nullptr;
+    auto location = location_;
+    auto identifier = ParseIdentifier();
+    Expect(Token::COLON);
+    auto type = ParseType();
+    return new ast::FormalParameter(location, identifier, type);
 }
 
 // functionReturnParameters
 //    : ('void' | type) | ('(' typeList ')')
 //    ;
 ast::ReturnParameterList* Parser::ParseFunctionReturnParameters() {
-    return nullptr;
+    auto location = location_;
+    std::vector<ast::Type*> types;
+    
+    if (Match(Token::LPAREN) ) {
+        Next();
+        types = ParseTypeList();
+        Expect(Token::RPAREN);
+    } else if (Match(Token::VOID)) {
+        // Do nothing for void type
+    } else if (Match(Token::LBRACE)) {
+        // Do nothing for void type
+    } else {
+        ast::Type* type = ParseType();
+        types.push_back(type);
+    }
+
+    return new ast::ReturnParameterList(location, types);
 }
 
-// functionBodyDeclaration
+// functionBlockDeclaration
 //    : block
 //    ;
 ast::FunctionBlockDecl* Parser::ParseFunctionBlockDeclaration() {
@@ -309,6 +335,14 @@ ast::QualifiedName* Parser::ParseQualifiedName() {
     return nullptr;
 }
 
+// qualifiedNameList
+//    : qualifiedName (',' qualifiedName)*
+//    ;
+ast::QualifiedName* Parser::ParseQualifiedNameList() {
+    return nullptr;
+}
+
+
 // type
 //    : primitiveType ('[' ']')*
 //    | classType ('[' ']')*
@@ -321,8 +355,9 @@ ast::Type* Parser::ParseType() {
 // typeList
 //    : type (',' type)*
 //    ;
-Node* Parser::ParseTypeList() {
-    return nullptr;
+std::vector<ast::Type*> Parser::ParseTypeList() {
+    std::vector<ast::Type*> types;
+    return types;
 }
 
 // classType

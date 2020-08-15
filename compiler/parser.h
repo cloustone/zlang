@@ -158,7 +158,7 @@ private:
     // typeList
     //    : type (',' type)*
     //    ;
-    Node* ParseTypeList();
+    std::vector<ast::Type*> ParseTypeList();
 
     // classType
     //   : qualifiedName
