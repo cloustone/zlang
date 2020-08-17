@@ -116,7 +116,7 @@ ast::Decl* Parser::ParseDeclaration(const Token& publicityToken) {
             break;
 
         case Token::INTERFACE:
-            decl = ParseInterfaceDeclaration();
+            decl = ParseInterfaceDecl();
             break;
 
        default:
@@ -356,6 +356,15 @@ ast::QualifiedName* Parser::ParseQualifiedName() {
     return new ast::QualifiedName(location, names);
 }
 
+// qualifiedNameList
+//    : qualifiedName (',' qualifiedName)*
+//    ;
+ast::QualifiedNameList* Parser::ParseQualifiedNameList() {
+    return nullptr;
+}
+
+
+
 // interfaceMethodDecl
 //    : IDENTIFIER formalParameters (':' (type | 'void'))? ('throw' qualifiedNameList)?
 // 
@@ -388,6 +397,51 @@ ast::InterfaceDecl* Parser::ParseInterfaceDecl() {
     Expect(Token::RBRACE);
     return new ast::InterfaceDecl(location, methodName, methods);
 }
+
+// classDeclaration
+//    : 'class' IDENTIFIER ('implements' qualifiedNameList)? 
+//     '{' classBodyDeclaration* '}'
+//    ;
+ast::ClassDecl* Parser::ParseClassDeclaration() {
+    auto location = location_;
+    auto className = ParseIdentifier();
+    QualifiedNameList* interfaceList = nullptr;
+    
+    if (Match(Token::IMPLEMENTS)) {
+        Next();
+        interfaceList = ParseQualifiedNameList();
+    }
+    Expect(Token::LBRACE);
+    auto classBodyDecl = ParseClassBody();
+    Expect(Token::RBRACE);
+    return new ast::ClassDecl(location, className, interfaceList, classBodyDecl);
+}
+
+// classBodyDeclaration
+//    : (classSectionSpecifier)? classMethodDeclaration |classVariableDeclaration 
+//    ;
+ast::ClassBodyDecl* Parser::ParseClassBody() {
+    auto location = location_;
+    std::vector<ast::VariableDecl*> variables;
+    std::vector<ast::FunctionDecl*> functions;
+    bool publicity = false;
+
+    while (!Match(Token::RBRACE)) {
+        if (token_.type_ == Token::PRIVATE || token_.type_ == Token::PUBLIC) {
+            publicity = (token_.type_ == Token::PUBLIC);
+            Next();
+            continue;
+        }
+        // function and varaible declaration both begin with identifier
+        
+            
+        
+
+    }
+    return nullptr;
+}
+
+
 
 
 
@@ -446,15 +500,6 @@ Node* Parser::ParsePrimitiveType() {
 }
 
 
-
-Decl* Parser::ParseInterfaceDeclaration(){ return nullptr; }
-Decl* Parser::ParseClassDeclaration(){ return nullptr; }
-
-Decl* Parser::ParseClassBodyDeclaration(){ return nullptr; }
-
-Decl* Parser::ParseMemberDeclaration(){ return nullptr; }
-
-Decl* Parser::ParseMethodDeclaration(){ return nullptr; }
 
 VarInitializer* Parser::ParseVariableInitializer(){ return nullptr; }
 

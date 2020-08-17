@@ -143,6 +143,11 @@ private:
     //    ;
     ast::QualifiedName* ParseQualifiedName();
 
+    // qualifiedNameList
+    //    : qualifiedName (',' qualifiedName)*
+    //    ;
+    ast::QualifiedNameList* ParseQualifiedNameList();
+
     // interfaceMethodDecl
     //    : IDENTIFIER formalParameters (':' (type | 'void'))? ('throw' qualifiedNameList)?
     // 
@@ -152,7 +157,18 @@ private:
     //    : 'interface' '{' interfaceMethodDecl* '}'
     //    ;
     ast::InterfaceDecl* ParseInterfaceDecl();
-    
+
+    // classDeclaration
+    //    : 'class' IDENTIFIER ('extends' qualifiedName)?
+    //     '{' classBodyDeclaration* '}'
+    //    ;
+    ast::ClassDecl* ParseClassDeclaration();
+
+    // classBodyDeclaration
+    //    : (classSectionSpecifier)? classMethodDeclaration |classVariableDeclaration 
+    //    ;
+    ast::ClassBodyDecl* ParseClassBody();
+
 
     // type
     //    : primitiveType ('[' ']')*
@@ -199,17 +215,6 @@ private:
     ast::VarInitializer* ParseVariableInitializer();
 
     
-    // classDeclaration
-    //    : 'class' IDENTIFIER ('extends' qualifiedName)?
-    //      ('implements' qualifiedNameList)? 
-    //     '{' classBodyDeclaration* '}'
-    //    ;
-    ast::Decl* ParseClassDeclaration();
-    ast::Decl* ParseInterfaceDeclaration();
-
-    ast::Decl* ParseClassBodyDeclaration();
-    ast::Decl* ParseMemberDeclaration();
-    ast::Decl* ParseMethodDeclaration();
     Node* ParseArrayInitializer();
     Node* ParseMapInitializer();
 

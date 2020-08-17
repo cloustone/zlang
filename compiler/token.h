@@ -111,6 +111,7 @@ public:
         USING,
         FUNCTION,
         VOID,
+        IMPLEMENTS,
         KEYWORD_END,
         };
     static Token InvalidToken;

@@ -96,7 +96,6 @@ interfaceDeclaration
 
 interfaceMethodDecl
     : IDENTIFIER formalParameters (':' (type | 'void'))? ('throw' qualifiedNameList)?
-    ;
 
 // type definition
 type
@@ -135,23 +134,23 @@ primitiveType
 
 
 classDeclaration
-    : 'class' IDENTIFIER ('extends' qualifiedName)?
-      ('implements' qualifiedNameList)? 
+    : 'class' IDENTIFIER ('implements' qualifiedNameList)? 
      '{' classBodyDeclaration* '}'
     ;
 classBodyDeclaration
-    : ';'
-    | modifier* memberDeclaration
+    : (classSectionSpecifier)? classMethodDeclaration |classVariableDeclaration 
     ;
 
-memberDeclaration
-    :methodDeclaration 
-    |variableDeclaration
+classSectionSpecifier
+    : ('public' | 'private' ) ':'
     ;
 
-methodDeclaration
-    : 'func' IDENTIFIER formalParameters (':' (type | 'void'))? ('throw' qualifiedNameList)?
-     ( methodBlock | ';')
+classMethodDeclaration
+    : IDENTIFIER formalParameters (':' functionReturnParameters)?  functionBodyDeclaration
+    ;
+
+classMemberDeclaration
+    : IDENTIFIER (':' type)? ( '=' variableInitializer)? 
     ;
 
 variableDeclaration

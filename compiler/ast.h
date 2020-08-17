@@ -392,6 +392,44 @@ public:
     std::vector<InterfaceMethodDecl*> methods_;
 };
 
+// classBodyDeclaration
+//    : (classSectionSpecifier)? classMethodDeclaration |classVariableDeclaration 
+//    ;
+class ClassBodyDecl : public Decl {
+public:
+    ClassBodyDecl() = delete;
+    explicit ClassBodyDecl(const Location& location, const std::vector<VariableDecl*>& variables,
+            const std::vector<FunctionDecl*>& functions)
+        : Decl(location), variables_(variables), functions_(functions) {} 
+    virtual ~ClassBodyDecl() {
+        for (auto p : variables_) delete p;
+        for (auto p : functions_) delete p;
+    }
+    std::vector<VariableDecl*> variables_;
+    std::vector<FunctionDecl*> functions_;
+};
+
+// classDeclaration
+//    : 'class' IDENTIFIER ('extends' qualifiedName)?
+//      ('implements' qualifiedNameList)? 
+//     '{' classBodyDeclaration* '}'
+//    ;
+class ClassDecl : public Decl {
+public:
+    ClassDecl() = delete;
+    explicit ClassDecl(const Location& location, Identifier* name,
+           QualifiedNameList* interfaceList, ClassBodyDecl* classBody)
+        :Decl(location), name_(name), interfaceList_(interfaceList), classBody_(classBody) {}
+    virtual ~ClassDecl() {
+        if (name_) delete name_;
+        if (interfaceList_) delete interfaceList_;
+        if (classBody_) delete classBody_;
+    }
+    Identifier* name_;
+    QualifiedNameList* interfaceList_;
+    ClassBodyDecl* classBody_;
+};
+
 
 
 
