@@ -266,7 +266,7 @@ ast::FunctionDecl* Parser::ParseFunctionDeclaration() {
 ast::FormalParameterList* Parser::ParseFormalParameters() {
     Expect(Token::LPAREN);
     auto formalParameterList = ParseFormalParameterList();
-    Expect(Token::LPAREN);
+    Expect(Token::RPAREN);
     return formalParameterList;
 }
 
@@ -276,13 +276,11 @@ ast::FormalParameterList* Parser::ParseFormalParameters() {
 ast::FormalParameterList* Parser::ParseFormalParameterList() {
     auto location = location_;
     std::vector<ast::FormalParameter*> parameterList;
-    auto formalParameter = ParseFormalParameter();
-    parameterList.push_back(formalParameter);
+    parameterList.push_back(ParseFormalParameter());
 
-    while (Match(Token::LPAREN)) {
+    while (Match(Token::COMMA)) {
         Next();
-        formalParameter = ParseFormalParameter();
-        parameterList.push_back(formalParameter);
+        parameterList.push_back(ParseFormalParameter());
     }
     return new ast::FormalParameterList(location, parameterList); 
 }
@@ -360,10 +358,16 @@ ast::QualifiedName* Parser::ParseQualifiedName() {
 //    : qualifiedName (',' qualifiedName)*
 //    ;
 ast::QualifiedNameList* Parser::ParseQualifiedNameList() {
-    return nullptr;
+    auto location = location_;
+    std::vector<ast::QualifiedName*> qualifiedNames;
+    qualifiedNames.push_back(ParseQualifiedName());
+
+    while (Match(Token::COMMA)) {
+        Next();
+        qualifiedNames.push_back(ParseQualifiedName());
+    }
+    return new ast::QualifiedNameList(location, qualifiedNames);
 }
-
-
 
 // interfaceMethodDecl
 //    : IDENTIFIER formalParameters (':' (type | 'void'))? ('throw' qualifiedNameList)?
@@ -390,7 +394,7 @@ ast::InterfaceDecl* Parser::ParseInterfaceDecl() {
     std::vector<ast::InterfaceMethodDecl*> methods;
 
     Expect(Token::LBRACE);
-    while (!Match(Token::RPAREN)) {
+    while (!Match(Token::RBRACE)) {
         if (auto method  = ParseInterfaceMethod(); method)
             methods.push_back(method);
     }
@@ -430,15 +434,21 @@ ast::ClassBodyDecl* Parser::ParseClassBody() {
         if (token_.type_ == Token::PRIVATE || token_.type_ == Token::PUBLIC) {
             publicity = (token_.type_ == Token::PUBLIC);
             Next();
+            Expect(Token::COLON);
             continue;
         }
-        // function and varaible declaration both begin with identifier
-        
-            
-        
-
+        // method and varaible declaration both begin with identifier
+        Expect(Token::ID);
+        if (Match(Token::LPAREN)) { // method declaration
+            Back();
+            functions.push_back(ParseFunctionDeclaration());
+        } else { // variable declaration 
+            Back();
+            variables.push_back((ast::VariableDecl*)ParseVarDeclaration());
+        }
     }
-    return nullptr;
+    Expect(Token::RBRACE);
+    return new ast::ClassBodyDecl(location, variables, functions);
 }
 
 
@@ -499,13 +509,13 @@ Node* Parser::ParsePrimitiveType() {
     return nullptr;
 }
 
-
-
 VarInitializer* Parser::ParseVariableInitializer(){ return nullptr; }
 
 Node* Parser::ParseArrayInitializer(){ return nullptr; }
 
 Node* Parser::ParseMapInitializer(){ return nullptr; }
+
+// Statement parser functions
 
 
 

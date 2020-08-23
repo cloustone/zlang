@@ -177,28 +177,6 @@ constExpression
     : expression
     ;
 
-// ANNOTATIONS
-annotation
-    : '@' annotationName ( '('elementValuePairs | elementValue ')' )?
-    ;
-
-annotationName
-    : qualifiedName 
-    ;
-
-elementValuePairs
-    : elementValuePair (',' elementValuePair)*
-    ;
-elementValuePair
-    : IDENTIFIER '=' elementValue
-    ;
-elementValue
-    : expression
-    | annotation
-    ;
-    
-
-    
 //
 // statements
 //

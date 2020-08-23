@@ -28,8 +28,11 @@ private:
 
     // The function advance next token and update token variable
     void Next();
-    // The function lookheader to check wether next token match specified token
+    // The function lookhead to check wether next token match specified token
     bool Match(Token::TokenType type);
+
+    // Back will go back one token
+    void Back() {}
 
     // The function just output systax error messge to ErrorHandler
     void SyntaxErrorAt(const Token& token, const std::string& msg);
@@ -211,10 +214,164 @@ private:
     //    ;
     Node* ParsePrimitiveType();
 
-   
     ast::VarInitializer* ParseVariableInitializer();
 
-    
+    //
+    // statements
+    //
+   // statementBlock 
+   //     : '{' statement * '}'
+   //     ;
+    ast::Node* ParseStatementBlock();
+
+   // statement
+   //     : localVariableDeclarationStatement
+   //     | ifStatement
+   //     | forStatement
+   //     | foreachStatement
+   //     | doStatement
+   //     | whileStatement
+   //     | returnStatement
+   //     | tryStatement
+   //     | throwStatement
+   //     | breakStatement
+   //     | continueStatement
+   //     | assertStatement
+   //     | expressionStatement
+   //     | labelStatement
+   //     ;
+    ast::Stmt* ParseStatement();
+
+    // local variable declaration statement
+    // localVariableDeclarationStatement
+    //    : variableDeclaration 
+    //    ;
+    ast::Decl* ParseLocalVaraible();
+
+
+    // labelStatement
+    //    : IDENTIFIER ':' statement
+    //    ;
+    ast::Stmt* ParseLabelStatement();
+
+    // ifStatement
+    //    : 'if' '(' expression ')' statementBlock ('elif' statementBlock)* ('else' statementBlock)?
+    //    ;
+    ast::Stmt* ParseIfStatement();
+
+    // forStatement
+    //    : 'for' 
+    //      '('forInitializer?  ';'expression? ';' expressionList? ')'  
+    //      statement
+    //   ;
+    ast::Stmt* ParseForStatement();
+
+    // forInitializer
+    //    : variableDeclaration
+    //    | expressionList
+    //    ;
+    ast::Stmt* ParseForInitializer();
+
+    // foreachStatement
+    //    : 'foreach' '(' foreachVariable (',' foreachVariable)? 'in' iterableObject ')' statement
+    //    ;
+    ast::Stmt* ParseForeachStatement();
+
+    // foreachVariable
+    //     : IDENTIFIER (':' type)?
+    //     ;
+    ast::Node* ParseForeachVariable();
+
+    // iterableObject
+    //    : IDENTIFIER
+    //    | mapInitializer
+    //    | arrayInitializer
+    //    ;
+    ast::Node* ParseIterableObject();
+
+    // whileStatement
+    //    : 'while' '(' expression ')' statement
+    //    ;
+    ast::Stmt* ParseWhileStatement();
+
+    // doStatement
+    //    : 'do' statement 'while' '(' expression ')'
+    //    ;
+    ast::Stmt* ParseDoStatement();
+
+    // switchStatement
+    //    : 'switch' '(' expression ')' '{' switchCase*defaultCase? '}'
+    //    ;
+    ast::Stmt* ParseSwitchStatement();
+
+    // switchCase
+    //    : ('case' expression ':')+ statement
+    //    ;
+    ast::Node* ParseSwitchCase();
+
+    // defaultCase
+    //    : 'default' ':' statement
+    //    ;
+    ast::Node* ParseSwitchDefault();
+
+    // returnStatement
+    //    : 'return' expression? ';'
+    //    ;
+    ast::Stmt* ParseReturnStatement();
+
+    // breakStatement
+    //    : 'break' ';'
+    //    ;
+    ast::Stmt* ParseBreakStatement();
+
+    // continueStatement
+    // continueStatement
+    //    : 'continue' IDENTIFIER? ';'
+    //    ;
+    ast::Stmt* ParseContinueStatement();
+
+    // assertStatement
+    //    : 'assert' '(' expression ')' ';'
+    //    ;
+    ast::Stmt* ParseAssertStatement();
+
+    // throwStatement
+    //    : 'throw' expression ';'
+    //    ;
+    ast::Stmt* ParseThrowStatement();
+
+    // tryStatement
+    //    : 'try' block catchParts? finallyPart?
+    //    ;
+    ast::Stmt* ParseTryStatement();
+
+    // catchParts
+    //    : catchPart*
+    //    ;
+    ast::Stmt* ParseCatchParts();
+
+    // catchPart
+    //    : 'catch' '('catchType IDENTIFIER ')' block 
+    //    ;
+    ast::Stmt* ParseCatchPart();
+
+    // catchType
+    //    : qualifiedName ( '|' qualifiedName)*
+    //    ;
+    ast::Node* ParseCatchType();
+
+    // finallyPart
+    //    : 'finally' block
+    //    ;
+    ast::Stmt* ParseFinallyPart();
+
+
+    // expressionStatement
+    //    : expression ';'
+    //    ;
+    ast::Stmt* ParseExprStatement();
+
+
     Node* ParseArrayInitializer();
     Node* ParseMapInitializer();
 
