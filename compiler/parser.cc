@@ -451,9 +451,175 @@ ast::ClassBodyDecl* Parser::ParseClassBody() {
     return new ast::ClassBodyDecl(location, variables, functions);
 }
 
+// labelStatement
+//    : IDENTIFIER ':' statement
+//    ;
+ast::Stmt* Parser::ParseLabelStatement() {
+    return nullptr;
+}
+
+// ifStatement
+//    : 'if' '(' expression ')' statementBlock ('elif' statementBlock)* ('else' statementBlock)?
+//    ;
+ast::Stmt* Parser::ParseIfStatement() {
+    return nullptr;
+}
+
+// forStatement
+//    : 'for' 
+//      '('forInitializer?  ';'expression? ';' expressionList? ')'  
+//      statement
+//   ;
+ast::Stmt* Parser::ParseForStatement() {
+    return nullptr;
+}
+
+// forInitializer
+//    : variableDeclaration
+//    | expressionList
+//    ;
+ast::Stmt* Parser::ParseForInitializer() {
+    return nullptr;
+}
+
+// foreachStatement
+//    : 'foreach' '(' foreachVariable (',' foreachVariable)? 'in' iterableObject ')' statement
+//    ;
+ast::Stmt* Parser::ParseForeachStatement() {
+    return nullptr;
+}
+
+// foreachVariable
+//     : IDENTIFIER (':' type)?
+//     ;
+ast::Node* Parser::ParseForeachVariable() {
+    return nullptr;
+}
+
+// iterableObject
+//    : IDENTIFIER
+//    | mapInitializer
+//    | arrayInitializer
+//    ;
+ast::Node* Parser::ParseIterableObject() {
+    return nullptr;
+}
 
 
 
+// whileStatement
+//    : 'while' '(' expression ')' statement
+//    ;
+ast::Stmt* Parser::ParseWhileStatement() {
+    return nullptr;
+}
+
+// doStatement
+//    : 'do' statement 'while' '(' expression ')'
+//    ;
+ast::Stmt* Parser::ParseDoStatement() {
+    return nullptr;
+}
+
+// switchStatement
+//    : 'switch' '(' expression ')' '{' switchCase*defaultCase? '}'
+//    ;
+ast::Stmt* Parser::ParseSwitchStatement() {
+    return nullptr;
+}
+
+// switchCase
+//    : ('case' expression ':')+ statement
+//    ;
+ast::Node* Parser::ParseSwitchCase() {
+    return nullptr;
+}
+
+// defaultCase
+//    : 'default' ':' statement
+//    ;
+ast::Node* Parser::ParseSwitchDefault() {
+    return nullptr;
+}
+
+// returnStatement
+//    : 'return' expression? ';'
+//    ;
+ast::Stmt* Parser::ParseReturnStatement() {
+    return nullptr;
+}
+
+// breakStatement
+//    : 'break' ';'
+//    ;
+ast::Stmt* Parser::ParseBreakStatement() {
+    return nullptr;
+}
+
+// continueStatement
+// continueStatement
+//    : 'continue' IDENTIFIER? ';'
+//    ;
+ast::Stmt* Parser::ParseContinueStatement() {
+    return nullptr;
+}
+
+// assertStatement
+//    : 'assert' '(' expression ')' ';'
+//    ;
+ast::Stmt* Parser::ParseAssertStatement() {
+    return nullptr;
+}
+
+
+// throwStatement
+//    : 'throw' expression ';'
+//    ;
+ast::Stmt* Parser::ParseThrowStatement() {
+    return nullptr;
+}
+
+// tryStatement
+//    : 'try' block catchParts? finallyPart?
+//    ;
+ast::Stmt* Parser::ParseTryStatement() {
+    return nullptr;
+}
+
+// catchParts
+//    : catchPart*
+//    ;
+ast::Stmt* Parser::ParseCatchParts() {
+    return nullptr;
+}
+
+// catchPart
+//    : 'catch' '('catchType IDENTIFIER ')' block 
+//    ;
+ast::Stmt* Parser::ParseCatchPart() {
+    return nullptr;
+}
+
+// catchType
+//    : qualifiedName ( '|' qualifiedName)*
+//    ;
+ast::Node* Parser::ParseCatchType() {
+    return nullptr;
+}
+
+// finallyPart
+//    : 'finally' block
+//    ;
+ast::Stmt* Parser::ParseFinallyPart() {
+    return nullptr;
+}
+
+// expressionStatement
+//    : expression ';'
+//    ;
+ast::Stmt* Parser::ParseExprStatement() {
+    return nullptr;
+}
 
 // type
 //    : primitiveType ('[' ']')*

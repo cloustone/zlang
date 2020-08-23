@@ -218,29 +218,33 @@ private:
 
     //
     // statements
-    //
-   // statementBlock 
-   //     : '{' statement * '}'
-   //     ;
-    ast::Node* ParseStatementBlock();
+    //    : statement*
+    //    ;
+    ast::Node* ParseStatements();
 
-   // statement
-   //     : localVariableDeclarationStatement
-   //     | ifStatement
-   //     | forStatement
-   //     | foreachStatement
-   //     | doStatement
-   //     | whileStatement
-   //     | returnStatement
-   //     | tryStatement
-   //     | throwStatement
-   //     | breakStatement
-   //     | continueStatement
-   //     | assertStatement
-   //     | expressionStatement
-   //     | labelStatement
-   //     ;
+    // statement
+    //     : localVariableDeclarationStatement
+    //     | ifStatement
+    //     | forStatement
+    //     | foreachStatement
+    //     | doStatement
+    //     | whileStatement
+    //     | returnStatement
+    //     | tryStatement
+    //     | throwStatement
+    //     | breakStatement
+    //     | continueStatement
+    //     | assertStatement
+    //     | expressionStatement
+    //     | labelStatement
+    //     | blockStatement
+    //     ;
     ast::Stmt* ParseStatement();
+
+    // statementBlock 
+    //     : '{' statements '}'
+    //     ;
+    ast::Node* ParseStatementBlock();
 
     // local variable declaration statement
     // localVariableDeclarationStatement
