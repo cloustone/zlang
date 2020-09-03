@@ -90,6 +90,7 @@ public:
         ELSE,
         FALLTHROUGH,
         FOR,
+        FOREACH,
 
         FUNC,
         GOTO,

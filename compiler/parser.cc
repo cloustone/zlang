@@ -451,6 +451,50 @@ ast::ClassBodyDecl* Parser::ParseClassBody() {
     return new ast::ClassBodyDecl(location, variables, functions);
 }
 
+// statements
+//    : statement*
+//    ;
+std::vector<ast::Stmt*> Parser::ParseStatements() {
+    std::vector<ast::Stmt*> stmts;
+    while (ast::Stmt* stmt = ParseStatement())
+        stmts.push_back(stmt);
+    return stmts;
+}
+
+// statement
+//     : ifStatement
+//     | forStatement
+//     | foreachStatement
+//     | doStatement
+//     | whileStatement
+//     | returnStatement
+//     | tryStatement
+//     | throwStatement
+//     | breakStatement
+//     | continueStatement
+//     | assertStatement
+//     | expressionStatement
+//     | labelStatement
+//     | blockStatement
+//     | localVariableDeclarationStatement
+//     ;
+ast::Stmt* Parser::ParseStatement() {
+    auto token = lexer_.Peek();
+    switch (token.type_) {
+        case Token::IF:
+            return ParseIfStatement();
+        case Token::FOR:
+            return ParseForStatement();
+        case Token::FOREACH:
+            return ParseForeachStatement();
+        default:
+            break;
+    }
+
+    SyntaxError("unkown statement");
+    return nullptr;
+}
+
 // labelStatement
 //    : IDENTIFIER ':' statement
 //    ;

@@ -220,7 +220,7 @@ private:
     // statements
     //    : statement*
     //    ;
-    ast::Node* ParseStatements();
+    std::vector<ast::Stmt*> ParseStatements();
 
     // statement
     //     : localVariableDeclarationStatement
