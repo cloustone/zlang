@@ -254,9 +254,14 @@ private:
 
 
     // labelStatement
-    //    : IDENTIFIER ':' statement
+    //    : IDENTIFIER ':' 
     //    ;
     ast::Stmt* ParseLabelStatement();
+
+    // blockStatement
+    //    : '{' statements '}'
+    //    ;
+    ast::Stmt* ParseBlockStatement();
 
     // ifStatement
     //    : 'if' '(' expression ')' statementBlock ('elif' statementBlock)* ('else' statementBlock)?
@@ -380,8 +385,8 @@ private:
     Node* ParseMapInitializer();
 
     // Expr
-    Node* ParseExpr() { return nullptr; }
-    Node* ParseConstExpr() { return nullptr; }
+    Expr* ParseExpr() { return nullptr; }
+    Expr* ParseConstExpr() { return nullptr; }
 
     // Statement
     Stmt* ParseStmt() { return nullptr; }

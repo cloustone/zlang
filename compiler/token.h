@@ -88,6 +88,7 @@ public:
         DEFAULT,
         DEFER,
         ELSE,
+        ELIF,
         FALLTHROUGH,
         FOR,
         FOREACH,

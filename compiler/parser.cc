@@ -479,26 +479,41 @@ std::vector<ast::Stmt*> Parser::ParseStatements() {
 //     | localVariableDeclarationStatement
 //     ;
 ast::Stmt* Parser::ParseStatement() {
-    auto token = lexer_.Peek();
-    switch (token.type_) {
+    Next();
+    switch (token_.type_) {
         case Token::IF:
             return ParseIfStatement();
         case Token::FOR:
             return ParseForStatement();
         case Token::FOREACH:
             return ParseForeachStatement();
+        case Token::ID:
+            if (Match(Token::COLON))
+                return ParseLabelStatement();
+            else 
+                return ParseExprStatement();
         default:
             break;
     }
-
     SyntaxError("unkown statement");
-    return nullptr;
+    SyncStmt();
+    return new UnknownStmt(location_);
 }
 
 // labelStatement
-//    : IDENTIFIER ':' statement
+//    : IDENTIFIER ':' 
 //    ;
 ast::Stmt* Parser::ParseLabelStatement() {
+    auto location = location_;
+    const std::string label = token_.assic_;
+    Expect(Token::COLON);
+    return new ast::LabelStmt(location, label);
+}
+
+// blockStatement
+//    : '{' statements '}'
+//    ;
+ast::Stmt* Parser::ParseBlockStatement() {
     return nullptr;
 }
 
@@ -506,7 +521,24 @@ ast::Stmt* Parser::ParseLabelStatement() {
 //    : 'if' '(' expression ')' statementBlock ('elif' statementBlock)* ('else' statementBlock)?
 //    ;
 ast::Stmt* Parser::ParseIfStatement() {
-    return nullptr;
+    auto location = location_;
+
+    Match(Token::LBRACE);
+    auto conditionExpr = ParseExpr();
+    auto ifBlockStmt = ParseBlockStatement();
+
+    std::vector<ast::Stmt*> elifStmts;
+    while (Match(Token::ELIF)) {
+        Next();
+        auto stmt = ParseBlockStatement();
+        elifStmts.push_back(stmt);
+    }
+    ast::Stmt* finalStmt = nullptr;
+    if (Match(Token::ELSE)) {
+        Next();
+        finalStmt = ParseBlockStatement();
+    }
+    return new ast::IfStmt(location, conditionExpr, ifBlockStmt, elifStmts, finalStmt);
 }
 
 // forStatement

@@ -430,13 +430,20 @@ public:
     ClassBodyDecl* classBody_;
 };
 
+class UnknownStmt : public Stmt {
+public:
+    UnknownStmt() = delete;
+    explicit UnknownStmt(const Location& location) : Stmt(location) {}
+};
+
+
 // labelStatement
 //    : IDENTIFIER ':' statement
 //    ;
 class LabelStmt : public Stmt {
 public:
     LabelStmt() = delete;
-    explicit LabelStmt(const Location& location, const std::string& name);
+    explicit LabelStmt(const Location& location, const std::string& name) :Stmt(location), labelName_(name) {}
     const std::string labelName_;
 };
 
@@ -445,7 +452,16 @@ public:
 //    ;
 class IfStmt : public Stmt {
 public:
+    IfStmt() = delete;
+    explicit IfStmt(const Location& location, Expr* conditionExpr, Stmt* ifBlockStmt,
+            const std::vector<Stmt*>& elifBlockStmts, Stmt* finalStmt) : Stmt(location),
+            conditionExpr_(conditionExpr), ifBlockStmt_(ifBlockStmt), elifBlockStmts_(elifBlockStmts), finalStmt_(finalStmt) {}
+    Expr* conditionExpr_;
+    Stmt* ifBlockStmt_;
+    std::vector<Stmt*> elifBlockStmts_;
+    Stmt* finalStmt_;
 };
+
 
 // forStatement
 //    : 'for' 
