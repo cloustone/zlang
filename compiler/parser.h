@@ -264,13 +264,16 @@ private:
     ast::Stmt* ParseBlockStatement();
 
     // ifStatement
-    //    : 'if' '(' expression ')' statementBlock ('elif' statementBlock)* ('else' statementBlock)?
+    //    : 'if' expression  statementBlock ('elif' statementBlock)* ('else' statementBlock)?
     //    ;
     ast::Stmt* ParseIfStatement();
 
+    ast::ExprStmt* ParseExprStatement();
+    ast::ExprStmts* ParseExprStatements();
+
     // forStatement
     //    : 'for' 
-    //      '('forInitializer?  ';'expression? ';' expressionList? ')'  
+    //      forInitializer?  ';'expression? ';' expressionList?   
     //      statement
     //   ;
     ast::Stmt* ParseForStatement();
@@ -373,12 +376,6 @@ private:
     //    : 'finally' block
     //    ;
     ast::Stmt* ParseFinallyPart();
-
-
-    // expressionStatement
-    //    : expression ';'
-    //    ;
-    ast::Stmt* ParseExprStatement();
 
 
     Node* ParseArrayInitializer();

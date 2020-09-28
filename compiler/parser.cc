@@ -518,36 +518,69 @@ ast::Stmt* Parser::ParseBlockStatement() {
 }
 
 // ifStatement
-//    : 'if' '(' expression ')' statementBlock ('elif' statementBlock)* ('else' statementBlock)?
+//    : 'if' expression  statementBlock ('elif' expression statementBlock)* ('else' statementBlock)?
 //    ;
 ast::Stmt* Parser::ParseIfStatement() {
     auto location = location_;
+    bool elseNeed = false;
 
-    Match(Token::LBRACE);
     auto conditionExpr = ParseExpr();
-    auto ifBlockStmt = ParseBlockStatement();
+    auto ifstmt = ParseBlockStatement();
 
-    std::vector<ast::Stmt*> elifStmts;
+    std::vector<std::pair<ast::Expr*, ast::Stmt*>> stmts;
     while (Match(Token::ELIF)) {
+        elseNeed = true;
         Next();
+        auto expr = ParseExpr();
         auto stmt = ParseBlockStatement();
-        elifStmts.push_back(stmt);
+        stmts.push_back(std::make_pair(expr, stmt));
     }
     ast::Stmt* finalStmt = nullptr;
     if (Match(Token::ELSE)) {
         Next();
         finalStmt = ParseBlockStatement();
+    } else if (elseNeed) {
+        SyntaxError("no else statement");
+        SyncStmt();
+    } else {
+        // Do nothing
     }
-    return new ast::IfStmt(location, conditionExpr, ifBlockStmt, elifStmts, finalStmt);
+
+    return new ast::IfStmt(location, conditionExpr, ifstmt, stmts, finalStmt);
 }
+
+ast::ExprStmt* Parser::ParseExprStatement() {
+    return nullptr;
+}
+ast::ExprStmts* Parser::ParseExprStatements() {
+    return nullptr;
+}
+
+
 
 // forStatement
 //    : 'for' 
-//      '('forInitializer?  ';'expression? ';' expressionList? ')'  
-//      statement
+//      forInitializer?  ';' expr? ';' exprStmts?  blockStmt
 //   ;
 ast::Stmt* Parser::ParseForStatement() {
-    return nullptr;
+    auto location = location_;
+    ExprStmts* initializer = nullptr;
+    Expr* expr = nullptr;
+    ExprStmts* finalizer = nullptr;
+
+    if (!Match(Token::SEMICOLON))
+        initializer = ParseExprStatements();
+    Expect(Token::SEMICOLON);
+
+    if (!Match(Token::SEMICOLON))
+        expr = ParseExpr();
+    Expect(Token::SEMICOLON);
+
+    if (!Match(Token::LBRACE))
+        finalizer = ParseExprStatements();
+
+    auto block = ParseBlockStatement();
+    return new ast::ForStmt(location, initializer, expr, finalizer, block);
 }
 
 // forInitializer
@@ -687,13 +720,6 @@ ast::Node* Parser::ParseCatchType() {
 //    : 'finally' block
 //    ;
 ast::Stmt* Parser::ParseFinallyPart() {
-    return nullptr;
-}
-
-// expressionStatement
-//    : expression ';'
-//    ;
-ast::Stmt* Parser::ParseExprStatement() {
     return nullptr;
 }
 

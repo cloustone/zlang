@@ -454,14 +454,38 @@ class IfStmt : public Stmt {
 public:
     IfStmt() = delete;
     explicit IfStmt(const Location& location, Expr* conditionExpr, Stmt* ifBlockStmt,
-            const std::vector<Stmt*>& elifBlockStmts, Stmt* finalStmt) : Stmt(location),
+            const std::vector<std::pair<Expr*, Stmt*>>& elifBlockStmts, Stmt* finalStmt) : Stmt(location),
             conditionExpr_(conditionExpr), ifBlockStmt_(ifBlockStmt), elifBlockStmts_(elifBlockStmts), finalStmt_(finalStmt) {}
     Expr* conditionExpr_;
     Stmt* ifBlockStmt_;
-    std::vector<Stmt*> elifBlockStmts_;
+    std::vector<std::pair<Expr*, Stmt*>> elifBlockStmts_;
     Stmt* finalStmt_;
 };
 
+class ExprStmt : public Stmt {
+public:
+    ExprStmt() = delete;
+    explicit ExprStmt(const Location& location, VariableDecl* varDecl) : Stmt(location), varDecl_(varDecl), stmt_(nullptr) {}
+    explicit ExprStmt(const Location& location, Stmt* stmt) : Stmt(location), varDecl_(nullptr), stmt_(stmt) {}
+    virtual ~ExprStmt() {
+        if (varDecl_) delete varDecl_;
+        if (stmt_) delete stmt_;
+    }
+    VariableDecl* varDecl_;
+    Stmt* stmt_;
+};
+
+class ExprStmts : public Stmt {
+public:
+    ExprStmts() = delete;
+    explicit ExprStmts(const Location& location, const std::vector<ExprStmt*>& stmts):
+        Stmt(location), stmts_(stmts) {}
+    virtual ~ExprStmts() {
+        for (auto stmt: stmts_) 
+            delete stmt;
+    }
+    std::vector<ExprStmt*> stmts_;
+};
 
 // forStatement
 //    : 'for' 
@@ -470,6 +494,19 @@ public:
 //   ;
 class ForStmt : public Stmt {
 public:
+    ForStmt() = delete;
+    explicit ForStmt(const Location& location, ExprStmts* initializer, Expr* expr, ExprStmts* finalizer, Stmt* block):
+        Stmt(location), initializer_(initializer), expr_(expr), finalizer_(finalizer), block_(block) {}
+    ~ForStmt() {
+        if (initializer_) delete initializer_;
+        if (expr_) delete expr_;
+        if (finalizer_) delete finalizer_;
+        if (block_) delete block_;
+    }
+    ExprStmts* initializer_;
+    Expr* expr_;
+    ExprStmts* finalizer_;
+    Stmt* block_;
 };
 
 // iterableObject
@@ -560,26 +597,6 @@ public:
 class FinallyStmt : public Stmt {
 public:
 };
-
-// expressionStatement
-//    : expression ';'
-//    ;
-class ExprStmt : public Stmt {
-public:
-};
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
