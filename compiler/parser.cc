@@ -583,26 +583,24 @@ ast::Stmt* Parser::ParseForStatement() {
     return new ast::ForStmt(location, initializer, expr, finalizer, block);
 }
 
-// forInitializer
-//    : variableDeclaration
-//    | expressionList
-//    ;
-ast::Stmt* Parser::ParseForInitializer() {
-    return nullptr;
-}
-
 // foreachStatement
-//    : 'foreach' '(' foreachVariable (',' foreachVariable)? 'in' iterableObject ')' statement
+//    : 'foreach' IDENTIFIER (',' IDENTIFIER)* 'in' iterableObject  blockStmt 
 //    ;
 ast::Stmt* Parser::ParseForeachStatement() {
-    return nullptr;
-}
+    auto location = location_;
+    std::vector<std::string> variables;
+    Expect(Token::ID);
+    variables.push_back(token_.assic_);
 
-// foreachVariable
-//     : IDENTIFIER (':' type)?
-//     ;
-ast::Node* Parser::ParseForeachVariable() {
-    return nullptr;
+    while (Match(Token::COMMA)) {
+        Next();
+        Expect(Token::ID);
+        variables.push_back(token_.assic_);
+    }
+    Expect(Token::IN);
+    auto iterableObject = ParseIterableObject();
+    auto block = ParseBlockStatement();
+    return new ForeachStmt(location, variables, iterableObject, block);
 }
 
 // iterableObject

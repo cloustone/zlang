@@ -108,6 +108,7 @@ public:
         CLASS,	
         SWITCH,
         VAR,
+        IN,
         PUBLIC,
         PRIVATE,
         USING,

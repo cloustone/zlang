@@ -509,6 +509,27 @@ public:
     Stmt* block_;
 };
 
+// forStatement
+//    : 'for' 
+//      '('forInitializer?  ';'expression? ';' expressionList? ')'  
+//      statement
+//   ;
+class ForeachStmt : public Stmt {
+public:
+    ForeachStmt() = delete;
+    explicit ForeachStmt(const Location& location, std::vector<std::string>& variables, Node* iterableObject, Stmt* block):
+        Stmt(location), variables_(variables), iterableObject_(iterableObject), block_(block) {}
+    ~ForeachStmt() {
+        if (iterableObject_) delete iterableObject_;
+        if (block_) delete block_;
+    }
+    std::vector<std::string> variables_;
+    Node* iterableObject_;
+    Stmt* block_;
+};
+
+
+
 // iterableObject
 //    : IDENTIFIER
 //    | mapInitializer
@@ -516,6 +537,25 @@ public:
 //    ;
 class IterableObject : public Node {
 public:
+    typedef typename std::pair<Node*, Expr*> Element;
+    IterableObject() = delete;
+    explicit IterableObject(const Location& location, const std::string& obj):
+        Node(location), name_(obj) {}
+    explicit IterableObject(const Location& location, const std::vector<Element>& elements):
+        Node(location), mapElements_(elements) {}
+    explicit IterableObject(const Location& location, const std::vector<Expr*>& elements):
+        Node(location), arrayElements_(elements) {}
+    virtual ~IterableObject() {
+        for (auto item : mapElements_) {
+            delete item.first;
+            delete item.second;
+        }
+        for (auto item : arrayElements_) 
+            delete item;
+    }
+    std::string name_;
+    std::vector<Element> mapElements_;
+    std::vector<Expr*> arrayElements_;
 };
 
 
