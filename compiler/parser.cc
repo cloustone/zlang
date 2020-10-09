@@ -600,16 +600,38 @@ ast::Stmt* Parser::ParseForeachStatement() {
     Expect(Token::IN);
     auto iterableObject = ParseIterableObject();
     auto block = ParseBlockStatement();
-    return new ForeachStmt(location, variables, iterableObject, block);
+    return new ast::ForeachStmt(location, variables, iterableObject, block);
 }
 
 // iterableObject
-//    : IDENTIFIER
+//    : primary 
 //    | mapInitializer
 //    | arrayInitializer
 //    ;
 ast::Node* Parser::ParseIterableObject() {
+    auto location = location_;
+
+    if (Match(Token::LBRACE))
+        return new ast::IterableObject(location, ParseMapInitializer());
+    else if (Match(Token::LBRACK))
+        return new ast::IterableObject(location, ParseArrayInitializer());
+    else 
+        return new ast::IterableObject(location, ParsePrimary());
+}
+
+ast::Node* Parser::ParsePrimary() {
+    auto location = location_;
     return nullptr;
+}
+
+std::vector<ast::Expr*> Parser::ParseArrayInitializer() {
+    std::vector<ast::Expr*> elements;
+    return elements;
+}
+
+std::vector<ast::IterableObject::Element> Parser::ParseMapInitializer() {
+    std::vector<ast::IterableObject::Element> elements;
+    return elements;
 }
 
 
@@ -776,10 +798,6 @@ Node* Parser::ParsePrimitiveType() {
 }
 
 VarInitializer* Parser::ParseVariableInitializer(){ return nullptr; }
-
-Node* Parser::ParseArrayInitializer(){ return nullptr; }
-
-Node* Parser::ParseMapInitializer(){ return nullptr; }
 
 // Statement parser functions
 

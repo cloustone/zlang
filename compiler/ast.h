@@ -531,7 +531,7 @@ public:
 
 
 // iterableObject
-//    : IDENTIFIER
+//    : primary 
 //    | mapInitializer
 //    | arrayInitializer
 //    ;
@@ -539,13 +539,14 @@ class IterableObject : public Node {
 public:
     typedef typename std::pair<Node*, Expr*> Element;
     IterableObject() = delete;
-    explicit IterableObject(const Location& location, const std::string& obj):
-        Node(location), name_(obj) {}
+    explicit IterableObject(const Location& location, Node* primary):
+        Node(location), primary_(primary) {}
     explicit IterableObject(const Location& location, const std::vector<Element>& elements):
         Node(location), mapElements_(elements) {}
     explicit IterableObject(const Location& location, const std::vector<Expr*>& elements):
         Node(location), arrayElements_(elements) {}
     virtual ~IterableObject() {
+        if (primary_) delete primary_;
         for (auto item : mapElements_) {
             delete item.first;
             delete item.second;
@@ -553,7 +554,7 @@ public:
         for (auto item : arrayElements_) 
             delete item;
     }
-    std::string name_;
+    Node* primary_; 
     std::vector<Element> mapElements_;
     std::vector<Expr*> arrayElements_;
 };

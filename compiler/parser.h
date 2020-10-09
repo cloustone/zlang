@@ -285,21 +285,20 @@ private:
     ast::Stmt* ParseForInitializer();
 
     // foreachStatement
-    //    : 'foreach' '(' foreachVariable (',' foreachVariable)? 'in' iterableObject ')' statement
+    //    : 'foreach' IDENTIFIER (',' IDENTIFIER)* 'in' iterableObject  blockStmt 
     //    ;
     ast::Stmt* ParseForeachStatement();
 
-    // foreachVariable
-    //     : IDENTIFIER (':' type)?
-    //     ;
-    ast::Node* ParseForeachVariable();
-
     // iterableObject
-    //    : IDENTIFIER
+    //    : primary 
     //    | mapInitializer
     //    | arrayInitializer
     //    ;
     ast::Node* ParseIterableObject();
+
+    ast::Node* ParsePrimary();
+    std::vector<ast::Expr*> ParseArrayInitializer();
+    std::vector<ast::IterableObject::Element> ParseMapInitializer();
 
     // whileStatement
     //    : 'while' '(' expression ')' statement
@@ -377,9 +376,8 @@ private:
     //    ;
     ast::Stmt* ParseFinallyPart();
 
+    
 
-    Node* ParseArrayInitializer();
-    Node* ParseMapInitializer();
 
     // Expr
     Expr* ParseExpr() { return nullptr; }
