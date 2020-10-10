@@ -297,9 +297,9 @@ private:
     ast::Node* ParseIterableObject();
 
     ast::Node* ParsePrimary();
-    std::vector<ast::Expr*> ParseArrayInitializer();
+    std::vector<ast::Node*> ParseArrayInitializer();
     std::vector<ast::IterableObject::Element> ParseMapInitializer();
-
+    ast::IterableObject::Element ParseMapElementPair();
     // whileStatement
     //    : 'while' '(' expression ')' statement
     //    ;

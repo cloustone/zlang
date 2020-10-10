@@ -624,16 +624,41 @@ ast::Node* Parser::ParsePrimary() {
     return nullptr;
 }
 
-std::vector<ast::Expr*> Parser::ParseArrayInitializer() {
-    std::vector<ast::Expr*> elements;
+// arrayInitializer
+//  : '[' primary (',' primary)* ']'
+//  | '[' primary ('...' prirmary)? ']'
+//  ;
+std::vector<ast::Node*> Parser::ParseArrayInitializer() {
+    std::vector<ast::Node*> elements;
     return elements;
 }
 
+// mapInitializer
+//  : '{' mapElementPair (',' mapElementPair)* '}'
+//  ;
 std::vector<ast::IterableObject::Element> Parser::ParseMapInitializer() {
+    auto location = location_;
     std::vector<ast::IterableObject::Element> elements;
+
+    Expect(Token::LBRACE);
+    elements.push_back(ParseMapElementPair());
+    while (Match(Token::COMMA)) {
+        Next();
+        elements.push_back(ParseMapElementPair());
+    }
+    Expect(Token::RBRACE);
     return elements;
 }
 
+// mapElementPair
+//  : primary ':' primary
+//  ;
+ast::IterableObject::Element Parser::ParseMapElementPair() {
+    auto key = ParsePrimary();
+    Expect(Token::COLON);
+    auto val = ParsePrimary();
+    return std::make_pair(key, val);
+}
 
 
 // whileStatement

@@ -537,13 +537,13 @@ public:
 //    ;
 class IterableObject : public Node {
 public:
-    typedef typename std::pair<Node*, Expr*> Element;
+    typedef typename std::pair<Node*, Node*> Element;
     IterableObject() = delete;
     explicit IterableObject(const Location& location, Node* primary):
         Node(location), primary_(primary) {}
     explicit IterableObject(const Location& location, const std::vector<Element>& elements):
         Node(location), mapElements_(elements) {}
-    explicit IterableObject(const Location& location, const std::vector<Expr*>& elements):
+    explicit IterableObject(const Location& location, const std::vector<Node*>& elements):
         Node(location), arrayElements_(elements) {}
     virtual ~IterableObject() {
         if (primary_) delete primary_;
@@ -556,7 +556,7 @@ public:
     }
     Node* primary_; 
     std::vector<Element> mapElements_;
-    std::vector<Expr*> arrayElements_;
+    std::vector<Node*> arrayElements_;
 };
 
 
